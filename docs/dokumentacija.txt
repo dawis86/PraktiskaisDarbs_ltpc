@@ -1,0 +1,1125 @@
+======================================================================
+
+   PROGRAMMATŪRAS "KLIENTU REĢISTRS" TEHNISKĀ DOKUMENTĀCIJA
+
+   Versija: 2.1.0
+   Autors: Dāvis Strazds
+   Dokumenta tips: Tehniskā specifikācija, arhitektūras apraksts un lietotāja rokasgrāmata
+
+======================================================================
+
+SATURA RĀDĪTĀJS
+
+1.  VISPĀRĪGĀ INFORMĀCIJA PAR PROJEKTU
+    1.1. Ievads un mērķis
+    1.2. Darbības joma
+    1.3. Arhitektūras pārskats
+    1.4. Tehnoloģiskais nodrošinājums
+    1.5. Bezsaistes (Offline) režīma atbalsts
+
+2.  PROGRAMMATŪRAS PRASĪBU APRAKSTS (SRS)
+    2.1. Funkcionālās prasības
+    2.2. Nefunkcionālās prasības
+    2.3. Lietošanas gadījumu (Use Case) specifikācijas
+    2.4. Biznesa procesu un darbplūsmas apraksts
+    2.5. Datu validācijas noteikumu matrica
+
+3.  KODA STRUKTŪRA UN ARHITEKTŪRA
+    3.1. Pakotņu hierarhija
+    3.2. Galvenie servisi un pārvaldnieki
+    3.3. Datu piekļuves slānis (DAO/Repository)
+    3.4. Kontrolieri un prezentācijas slānis
+    3.5. UI/UX Komponentu hierarhija
+    3.6. Datu modeļi (Domain Models)
+    3.7. Datu sinhronizācijas mehānisms
+
+4.  PROGRAMMATŪRAS PROJEKTĒJUMA SPECIFIKĀCIJA (SDD)
+    4.1. Datu plūsmas un sekvenču diagrammas
+    4.2. Stāvokļu mašīnas (State Machine) loģika
+    4.3. Pavedienu (Threading) modelis un asinhronā I/O
+    4.4. Konkrēto moduļu specifikācija (Deep Dive)
+
+5.  RESURSI UN KONFIGURĀCIJAS
+    5.1. Excel veidnes un atskaites
+    5.2. Lietotāja saskarnes definīcijas (FXML)
+    5.3. Vizuālais stils (CSS)
+    5.4. Konfigurācijas faili
+    5.5. Konfigurācijas un vides pārvaldība
+
+6.  DROŠĪBA, AUDITS UN KRIPTOGRĀFIJA
+    6.1. Datu aizsardzība un Kriptogrāfija
+    6.2. Licencēšana
+    6.3. Ierakstu bloķēšana (Concurrency Control)
+    6.4. Atbilstība GDPR un Audita politika
+    6.5. Lietotāju lomu un tiesību matrica
+    6.6. Sesiju pārvaldība un "Atcerēties mani" funkcionalitāte
+    6.7. Aizsardzība pret kiberuzbrukumiem (XSS, SQL Injection)
+
+7.  GUI UN UX APRAKSTS
+    7.1. Galvenais panelis (HubView)
+    7.2. Klienta karte
+    7.3. Statistikas moduļi
+    7.4. Specializētie moduļi (Nodarbības, Medikamenti, Veselība)
+
+8.  UZTURĒŠANA UN KĻŪDU PĀRVALDĪBA
+    8.1. Labās prakses
+    8.2. Paplašināšanas iespējas
+    8.3. Pilns kļūdu kodu un izņēmumu katalogs
+    8.4. Pakalpojumu līmeņa vienošanās (SLA)
+
+9.  KVALITĀTES KONTROLE (QA) UN TESTĒŠANA
+    9.1. Testēšanas stratēģija un pārklājums
+    9.2. Vienībtesti un integrācijas testi
+    9.3. Manuālās testēšanas scenāriji
+
+10. TEHNISKĀ ANALĪZE UN DATU VĀRDNĪCA (PIELIKUMS A)
+    10.1. Datu bāzes normalizācija
+    10.2. Detalizēta datu vārdnīca (Data Dictionary)
+    10.3. Algoritmiskā sarežģītība
+    10.4. Datu bāzes entītiju shēma (ERD)
+
+11. SISTĒMAS INTEGRĀCIJA UN API (PIELIKUMS B)
+    11.1. Iekšējo servisu API un Notikumu kopne
+    11.2. Datu struktūru (JSON) paraugi
+    11.3. Ārējās saskarnes
+
+12. SISTĒMAS ARHITEKTŪRAS UN LIETOTĀJA PIEREDZES SINTĒZE
+    12.1. Ārējā puse (Frontend/UX)
+    12.2. Tehniskā puse (Backend/Engineering)
+
+13. UZSTĀDĪŠANAS PAMĀCĪBA (DEPLOYMENT GUIDE)
+    13.1. Vides sagatavošana
+    13.2. Inicializācija
+    13.3. Konfigurācija
+    13.4. Problēmu novēršana (Troubleshooting)
+    13.5. Ieviešanas plāns un apmācības
+    13.6. Infrastruktūras prasības mērogošanai
+    13.7. Bezsaistes režīma konfigurācija
+
+14. DOKUMENTĀCIJAS UN KODA SINHRONIZĀCIJA
+    14.1. Dokumentācijas konsistences testi
+    14.2. Kļūdu ziņošana
+
+======================================================================
+
+1. VISPĀRĪGĀ INFORMĀCIJA PAR PROJEKTU
+
+1.1. Ievads un mērķis
+    Projekts "Klientu Reģistrs" ir specializēta darbvirsmas (desktop) lietojumprogramma, kas izstrādāta sociālās aprūpes centru (SAC) vajadzībām. Tās primārais mērķis ir digitalizēt un automatizēt klientu datu pārvaldību, samazinot administratīvo slogu un nodrošinot datu integritāti, drošību un pieejamību. Sistēma nodrošina pilnu klienta lietas dzīves cikla pārvaldību – no uzņemšanas līdz izrakstīšanai, ietverot medicīnisko, sociālo, rehabilitācijas un psiholoģisko dokumentāciju.
+
+1.2. Darbības joma
+    Sistēma aptver šādas funkcionālās jomas:
+    - **Klientu personas datu un statusa reģistrs (Gatavs).**
+    - **Klienta karte (Pamatdati, Sociālā anamnēze) (Gatavs).**
+    - **Sociālās aprūpes un rehabilitācijas plānu izstrāde (Gatavs).**
+    - **Medicīnisko datu (diagnozes, medikamenti, ārsti) uzskaite (Gatavs).**
+    - **Novērtēšanas kartes (Bāzes un Aktuālais novērtējums) (Gatavs).**
+    - **Sarunu apraksti un protokoli (Gatavs).**
+    - **Nodarbību un aktivitāšu žurnāls (Gatavs).**
+    - **Statistikas analīze un vizualizācija (Gatavs).**
+
+1.3. Arhitektūras pārskats
+    Lietojumprogramma ir veidota, balstoties uz daudzslāņu (Multi-tier) arhitektūru, ievērojot MVC (Model-View-Controller) projektēšanas paraugu:
+    - Prezentācijas slānis (View): JavaFX FXML faili un CSS stili, kas definē lietotāja saskarni.
+    - Kontrolieru slānis (Controller): Java klases, kas apstrādā lietotāja ievadi un mijiedarbojas ar servisiem.
+    - Servisa slānis (Service): Biznesa loģikas iekapsulēšana (piem., `ClientCardService`, `StatisticsDataFetcher`).
+    - Datu piekļuves slānis (Repository/DAO): Tieša komunikācija ar datubāzi, izmantojot JDBC (`KlientsRepository`, `PlanRepository`).
+    - Datu bāze: Relāciju datubāze (MySQL) datu persistenci.
+
+1.4. Tehnoloģiskais nodrošinājums
+    - Programmēšanas valoda: Java 21 (LTS).
+    - GUI ietvars: JavaFX 21.
+    - Datu bāze: MySQL 8.0+.
+    - Lokālā datu bāze: H2 Database (iegultā režīmā).
+    - Atkarības pārvaldība: Apache Maven.
+    - Versiju kontrole: Git.
+    - Galvenās bibliotēkas:
+        * Apache POI (Excel failu ģenerēšana un lasīšana).
+        * HikariCP (Augstas veiktspējas JDBC savienojumu pūls).
+        * Logback / SLF4J (Žurnālierakstu veidošana).
+        * ControlsFX (Paplašinātas JavaFX komponentes, piem., Notifications, CheckComboBox).
+        * Gson (JSON serializācija).
+        * BCrypt (Paroļu hešēšana).
+        * Flyway (iespējama nākotnes integrācija shēmas migrācijai, pašlaik `SchemaManager`).
+
+1.5. Bezsaistes (Offline) režīma atbalsts
+    Sistēma spēj darboties bez pastāvīga savienojuma ar centrālo MySQL serveri.
+    - **H2 Datubāze**: Dati tiek saglabāti lokālā H2 datubāzē (`local_db`), ja nav savienojuma.
+<<<<<<< HEAD
+    - **Store-and-Forward**: `OfflineBufferService` uzkrāj datus un automātiski nosūta tos uz serveri, tiklīdz atjaunojas interneta savienojums.
+    - **Pending Changes**: Lokālajā DB tiek uzturēta `pending_changes` tabula, lai precīzi identificētu bezsaistē mainītos ierakstus.
+    - **Gudra konfliktu risināšana**: 
+        * Prioritāte tiek piešķirta Administratoram un Vadītājam (viņu lokālās izmaiņas pārraksta serveri).
+        * Ja servera dati ir ievērojami jaunāki, tiek atjaunota lokālā versija.
+    - **Pilna sinhronizācija**: Nospiežot "Atjaunot", tiek veikta pilna datu un klasifikatoru ielāde no servera, nodrošinot 1:1 kopiju lokālajā H2 datubāzē.
+=======
+    - **Full Mirror Stratēģija**: Startējoties (ja ir internets), sistēma veic pilnu datu sinhronizāciju no servera uz lokālo DB, nodrošinot, ka lietotājam ir pieejami visi dati (arī citu ievadītie) darbam bezsaistē.
+    - **Store-and-Forward**: `OfflineBufferService` un `SyncService` uzkrāj lokālās izmaiņas tabulā `pending_changes` un automātiski nosūta tās uz serveri, tiklīdz atjaunojas interneta savienojums.
+    - **Gudra konfliktu risināšana**: 
+        * Prioritāte tiek piešķirta Administratoram un Vadītājam (viņu lokālās izmaiņas pārraksta serveri).
+        * Ja servera dati ir ievērojami jaunāki, tiek atjaunota lokālā versija.
+        * Konfliktu gadījumā lietotājam tiek piedāvāts dialogs (`ConflictDialogController`) izvēlei.
+>>>>>>> 68bc6aa566bd4b49440c50d19d72c3203d4f0810
+
+======================================================================
+
+2. PROGRAMMATŪRAS PRASĪBU APRAKSTS (SRS)
+
+2.1. Funkcionālās prasības
+    Katrai prasībai piešķirts unikāls identifikators (FR - Functional Requirement).
+    
+    | ID    | Nosaukums | Statuss | Apraksts |
+    |-------|-----------|---------|----------|
+    | FR-01 | Klienta reģistrācija | **Gatavs** | Jauna klienta izveide sistēmā ar unikālu PK pārbaudi. |
+    | FR-02 | Aprūpes plāna ģenerēšana | **Gatavs** | Pilna cikla plānu izstrāde un eksports uz Excel veidnēm. |
+    | FR-03 | Statistikas analīze | **Gatavs** | Datu agregācija par periodu. |
+    | FR-04 | Medikamentu pieprasījums | **Gatavs** | Zāļu saraksta sastādīšana un nosūtīšana. |
+    | FR-05 | Audita pieraksts | **Gatavs** | Automātiska visu darbību fiksēšana. |
+    | FR-06 | Nodarbību reģistrācija | **Gatavs** | Aktivitāšu uzskaite. |
+    | FR-07 | Bezsaistes režīms | **Gatavs** | Darbs bez interneta savienojuma. |
+
+2.2. Nefunkcionālās prasības
+    - **Veiktspēja**: Klientu saraksta ielāde (< 200ms pie 10,000 ierakstiem), izmantojot `TableView` virtualizāciju.
+    - **Pieejamība**: Sistēmas darbības laiks 99.9% (lokāla DB nodrošina neatkarību no interneta).
+    - **Saderība**: Windows 10/11 (x64), Java 21 Runtime Environment.
+    - **Drošība**: Datu šifrēšana miera stāvoklī (At-rest) un paroles hešēšana (PBKDF2).
+
+2.3. Lietošanas gadījumu (Use Case) specifikācijas
+    **UC-01: Piekļuve reģistram un jauna klienta uzņemšana**
+    1. **Aktors**: Sociālais darbinieks.
+    2. **Priekšnosacījumi**: Programma ir palaista.
+    3. **Autentifikācijas plūsma (Pirms piekļuves)**:
+       - Lietotājs nospiež "Reģistrēt klientu" (vai citu aizsargātu sadaļu).
+       - Sistēma pārbauda aktīvo sesiju (`SessionManager`).
+       - **Ja sesija ir aktīva**: Piekļuve tiek piešķirta nekavējoties.
+       - **Ja sesija nav aktīva**: Lietotājs tiek novirzīts uz autorizācijas logu (`LoginController`), kur jāievada lietotājvārds un parole.
+    4. **Pamatplūsma (Pēc piekļuves)**:
+       - Sistēma atver `ClientRegisterView`.
+       - Lietotājs ievada datus.
+       - Sistēma validē PK (`KarteValidationService`).
+       - Sistēma saglabā datus (`ClientCardService`).
+    5. **Alternatīvā plūsma**: Ja PK eksistē -> Sistēma parāda kļūdu "Dublikāts" un piedāvā atvērt esošo karti.
+
+2.4. Biznesa procesu un darbplūsmas apraksts
+    Sistēma atbalsta sociālā darba pamatprocesus saskaņā ar MK noteikumiem Nr. 138 un Nr. 291.
+
+    **Darbplūsma: Klienta lieta**
+    1. **Reģistrācija**: Tiek ievadīti pamatdati (`ClientRegisterController`). Sistēma piešķir unikālu ID.
+    2. **Novērtēšana**: Sociālais darbinieks aizpilda "Novērtēšanas karti" (`NovertesanaKarteController`). Process ir sadalīts divos režīmos: "Bāzes izveide" (pirmreizēji) un "Dinamikas novērtēšana" (atkārtoti), nodrošinot stingru datu pēctecību.
+    3. **Plānošana**: Balstoties uz novērtējumu, tiek izveidots Aprūpes un Rehabilitācijas plāns.
+    4. **Izpilde un Monitorings**: Tiek reģistrētas nodarbības un medikamentu izsniegšana.
+    5. **Pārskatīšana**: Plāni tiek regulāri pārskatīti.
+
+    **Likumdošanas atbilstība (Excel veidnes):**
+    - `SocAprPlans.xlsx`: Atbilst sociālās aprūpes plāna standartam.
+    - `SocRehPlans.xlsx`: Atbilst sociālās rehabilitācijas plāna prasībām.
+    - `Klienta_Karte.xlsx`: Ietver obligāto informāciju par klientu (MK not. 291).
+    - `Medicina_slimnīcai.xlsx`: Pavadraksts stacionēšanai.
+    - **HTML Instrukcijas**: Detalizētas lietošanas pamācības katrai lomai (`manual_index.html`), kas integrētas programmā.
+    - `NovertesanaKarte.xlsx`: Klienta funkcionālo spēju novērtējums.
+    - `Sarunas_Apraksts.xlsx`: Individuālo sarunu fiksēšana.
+
+2.5. Datu validācijas noteikumu matrica
+    Validāciju nodrošina `KarteValidationService` un `ValidationService`.
+
+    | Lauks | Tips | Noteikums (Regex/Logic) | Kļūdas ziņojums |
+    |-------|------|-------------------------|-----------------|
+    | Personas kods | Teksts | `^\d{6}-\d{5}$` vai `^32\d{9}$` | "Personas kodam jābūt formātā XXXXXX-XXXXX vai 32..." (Atbalsts 21. gs. manuālai norādei) |
+    | Telefona numurs | Teksts | `^[+]?[0-9\s-()]+$` | "Telefona numurs ir nepareizs." |
+    | E-pasts | Teksts | `^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$` | "E-pasts ir nepareizs." |
+    | Datums | Datums | Formāts `dd.MM.yyyy` | "Datums jāievada formātā: dd.MM.yyyy" |
+    | Vecums/Skaits | Skaitlis | `> 0` | "Jābūt pozitīvam skaitlim." |
+    | Obligātie lauki | - | `!= null && !isBlank()` | "{Lauka nosaukums} ir obligāts lauks." |
+    | Aiziešanas datums | Datums | `>= Iestāšanās datums` | "Aiziešanas datums nevar būt pirms iestāšanās datuma." |
+
+======================================================================
+
+3. KODA STRUKTŪRA UN ARHITEKTŪRA
+
+3.1. Pakotņu hierarhija
+    Projekta saknes pakotne ir `lv.socialcare`. Tā sadalīta funkcionālos moduļos:
+
+    - `lv.socialcare`: Satur lietotnes ieejas punktus (`Main`, `Launcher`), globālos servisus (`SessionManager`, `SharedDataService`, `LoggingService`, `ExcelManager`) un konfigurācijas klases (`MySQLConfig`).
+    - `lv.socialcare.view`: Vispārējie skati, dialogi un utilītklases (`UIUtils`, `ValidationService`, `ResourceLoader`).
+    - `lv.socialcare.client`: Klientu sarakstu un reģistra pārvaldība (`ClientRegisterController`, `ClientListViewController`, `HubController`).
+    - `lv.socialcare.clientcard`: Klienta kartes specifiskā loģika, sadalīta apakšpakotnēs pa cilnēm (`karte`, `protokols`, `aprupesplans`, `rehabilitacijasplans`, `novertesanakarte`, `nodarbibasvesture`, `sarunasapraksts`, `citainformacija`, `invenmantuakts`, `invennaudasakts`).
+    - `lv.socialcare.view`: Satur arī refaktorētos palīgus: `ClientChangeDetector`, `ClientUIMapper`, `ComboBoxHelper`.
+    - `lv.socialcare.database`: Datu bāzes savienojumu pārvaldība (`DatabaseConnectionManager`), shēmas migrācija (`SchemaManager`) un visi repozitoriji.
+    - `lv.socialcare.statistics`: Analītikas moduļi, atskaišu kontrolieri (`BaseReportController` mantinieki) un datu ielādes loģika.
+    - `lv.socialcare.nodarbibas`: Nodarbību reģistrācijas un pārvaldības loģika (`MainController`, `ManageActivitiesController`).
+    - `lv.socialcare.medikamenti`: Medikamentu pieprasījumu centrs (`MedRequestCenterController`).
+    - `lv.socialcare.health`: Veselības kartes funkcionalitāte (`HealthFormController`, `HealthCard`).
+    - `lv.socialcare.admin`: Administratora rīki un lietotāju pārvaldība (`AdminToolsController`, `AdminService`).
+    - `lv.socialcare.lists`: Klasifikatoru un sarakstu pārvaldība (`ListManagementController`).
+    - `lv.socialcare.slimnica`: Veidlapu ģenerēšana nosūtīšanai uz slimnīcu (`HospitalFormController`).
+    - `lv.socialcare.sync`: Datu sinhronizācijas loģika (`SyncHubController`).
+    - `lv.socialcare.export`: Eksporta loģika (`MasterRegisterExporter`, `ClientCardExporter`).
+    - `lv.socialcare.license`: Licencēšanas un kriptogrāfijas utilītas (`LicenseManager`, `SignatureUtils`).
+
+3.2. Galvenie servisi un pārvaldnieki
+    - `SharedDataService`: "Singleton" tipa serviss datu apmaiņai starp dažādiem kontrolieriem un datu kešošanai (klienti, klasifikatori).
+    - `SessionManager`: Pārvalda aktīvo lietotāja sesiju, autentifikācijas statusu un automātisko izrakstīšanos (timeout).
+    - `PasswordManager`: Nodrošina paroļu drošību, izmantojot PBKDF2 ar "salt", kā arī paroļu validācijas politiku.
+    - `ConfigurationService`: Ielasa un saglabā lietotnes konfigurāciju no datubāzes (`ConfigRepository`).
+    - `AppDataService`: Centralizēts piekļuves punkts biežāk izmantotajiem datiem (piem., klasifikatoriem).
+    - `OfflineBufferService`: Pārvalda datu buferēšanu un sinhronizāciju bezsaistes režīmā.
+
+3.3. Datu piekļuves slānis (DAO/Repository)
+    Visas datubāzes operācijas tiek veiktas caur repozitorijiem, izmantojot `PreparedStatement` lai novērstu SQL injekcijas.
+    - `KlientsRepository`: CRUD operācijas ar tabulu `klients`. Ietver metodes meklēšanai pēc PK, vārda, statusa.
+    - `PlanRepository`: Aprūpes un rehabilitācijas plānu datu saglabāšana un ielāde.
+    - `ClientCardInfoRepository`: Paplašinātā klienta informācija (sociālā anamnēze, intereses).
+    - `NovertesanaRepository`: Novērtēšanas karšu datu saglabāšana un ielāde.
+    - `ProtokolsRepository`: Rehabilitācijas protokolu pārvaldība.
+    - `SarunasAprakstsRepository`: Sarunu aprakstu žurnāls.
+    - `FamilyMemberRepository`: Piederīgo un kontaktpersonu pārvaldība.
+    - `HealthCardRepository`: Veselības datu (diagnozes, medikamenti) pārvaldība.
+    - `NodarbibaRepository`: Nodarbību žurnāla un statistikas vaicājumi.
+    - `ActivityRepository`: Aktivitāšu klasifikatora definīcijas (`activities` tabula).
+    - `MedRequestRepository`: Medikamentu pieprasījumu un to rindu pārvaldība.
+    - `UserCredentialsRepository`: Lietotāju autentifikācijas dati un tiesības.
+    - `UserSessionRepository`: Aktīvo sesiju uzskaite.
+    - `AuditLogRepository`: Sistēmas audita pierakstu veikšana (lietotājs, darbība, laiks).
+    - `NotificationRepository`: Paziņojumu vēsture (lai nerādītu atkārtoti).
+    - `ListRepository`: Vispārējo klasifikatoru (sarakstu) pārvaldība.
+    - `RecordLockingService`: Nodrošina pesimistisko bloķēšanu (Pessimistic Locking), lai novērstu vienlaicīgu viena ieraksta rediģēšanu.
+    - `RetryHelper`: Nodrošina automātisku datubāzes operāciju atkārtošanu (Retry Logic) tīkla kļūdu gadījumā, uzlabojot sistēmas stabilitāti.
+
+    **Transaction Management (Transakciju pārvaldība):**
+    Kritiskās operācijas, kas skar vairākas tabulas, tiek izpildītas vienā transakcijā.
+    Piemērs: `ClientCardService.saveFullClientCardData`.
+    1. `connection.setAutoCommit(false)` - Sāk transakciju.
+    2. `klientsRepository.saveOrUpdateKlients` - Saglabā pamatdatus.
+    3. `clientCardInfoRepository.saveOrUpdate` - Saglabā papildinformāciju.
+    4. `familyMemberRepository.replaceFamilyMembersForClient` - Atjauno piederīgos.
+    5. `connection.commit()` - Apstiprina izmaiņas.
+    Ja jebkurā solī rodas kļūda -> `connection.rollback()`.
+
+    **Database Schema Versioning (Shēmas versiju vadība):**
+    `SchemaManager` klase nodrošina automātisku datubāzes migrāciju.
+    Metode `runSchemaMigrations` izmanto `DatabaseMetaData`, lai pārbaudītu kolonnu eksistenci.
+    - Ja kolonna trūkst (piem., `last_updated`), tā tiek pievienota ar `ALTER TABLE`.
+    - Ja tabula ir lieka (piem., `social_anamnesis`), tā tiek dzēsta.
+    Tas nodrošina, ka lietotne var darboties ar vecāku DB versiju, to automātiski atjauninot.
+    - `SchemaManager` arī inicializē noklusējuma datus klasifikatoros (piem., aprūpes līmeņi, dokumentu tipi).
+
+3.4. Kontrolieri un prezentācijas slānis
+    Kontrolieri savieno FXML skatus ar biznesa loģiku.
+    - `WelcomeController`: Sākuma ekrāns ar animācijām.
+    - `HubController` (lv.socialcare.client): Centralizētais sistēmas vadības panelis (Dashboard). Nodrošina moduļu navigācijas maršrutēšanu, KPI (Key Performance Indicators) vizualizāciju un reāllaika notikumu plūsmas (Live Feed) agregāciju.
+    - `ClientCardController`: Kompozīta skata kontrolieris, kas realizē "Master-Detail" arhitektūras principu klienta lietas pārvaldībai. Pārvalda `TabPane` konteineru, dinamiski inicializējot apakšmoduļus (Karte, Protokols, Plāni) un nodrošinot konteksta (klienta ID) propagāciju starp tiem.
+    - `KarteController`: Klienta pamatdatu un sociālās anamnēzes ievade. Izmanto `KarteViewModel` un `KarteValidationService`.
+    - `PlanController`: Nodrošina aprūpes un rehabilitācijas plānu dinamisko ģenerēšanu, izmantojot programmatiski veidotas UI komponentes un `PlanItemDialog` interakcijai.
+    - `NovertesanaKarteController`: Klienta funkcionālo spēju novērtēšana (Bartela indekss u.c.).
+    - `SarunasAprakstsController`: Individuālo sarunu fiksēšana.
+    - `ProtokolsController`: Rehabilitācijas protokola aizpildīšana.
+    - `AdminToolsController`: Nodrošina sistēmas pārvaldības funkcijas (DB tīrīšana, rezerves kopijas, lietotāju paroles).
+    - `ListManagementController`: Ļauj administratoram rediģēt sistēmas klasifikatorus (sarakstus).
+    - `MedRequestCenterController`: Pārvalda medikamentu pasūtījumu veidošanu un vēsturi.
+    - `HospitalFormController`: Sagatavo pavadrakstu (veidlapu) klienta nosūtīšanai uz slimnīcu, iekļaujot medikamentus un diagnozes.
+    - `MainController` (Nodarbibas): Nodarbību reģistrācijas forma ar hierarhisku klasifikatoru izvēli.
+    - `ManageActivitiesController`: Ļauj definēt un rediģēt pieejamo nodarbību sarakstu (Bloks -> Speciālists -> Joma -> Līmenis).
+    - `SyncHubController`: Konfliktu risināšanas logs sinhronizācijas laikā.
+
+3.5. UI/UX Komponentu hierarhija
+    Sistēmas vizuālā konsistence tiek nodrošināta, stingri ievērojot MVC un CSS stilus.
+
+    | FXML Fails | Kontrolieris | CSS Stils | Mērķis |
+    |------------|--------------|-----------|--------|
+    | `HubView.fxml` | `HubController` | `styles.css` | Galvenais panelis, navigācija, KPI. |
+    | `ClientCardView.fxml` | `ClientCardController` | `clientcard_styles.css` | Klienta kartes konteiners (TabPane). |
+    | `KarteView.fxml` | `KarteController` | `karte-enhanced.css` | Klienta pamatdatu un sociālās kartes ievade. |
+    | `ProtokolsView.fxml` | `ProtokolsController` | `protokols_styles.css` | Sociālās rehabilitācijas protokols. |
+    | `AprupesPlansView.fxml` | `AprupesPlansController` | - | Sociālās aprūpes plāns. |
+    | `RehabilitacijasPlansView.fxml` | `RehabilitacijasPlansController` | - | Sociālās rehabilitācijas plāns. |
+    | `NovertesanaKarteView.fxml` | `NovertesanaKarteController` | - | Klienta novērtēšanas karte (Bāze/Aktuālais). |
+    | `NodarbibasVestureView.fxml` | `NodarbibasVestureController` | - | Klienta nodarbību vēsture. |
+    | `SarunasAprakstsView.fxml` | `SarunasAprakstsController` | - | Sarunas apraksta protokols. |
+    | `CitaInformacijaView.fxml` | `CitaInformacijaController` | - | Papildu informācijas lauki. |
+    | `MantuAktsView.fxml` | `MantuAktsController` | - | Inventāra (mantu) akts. |
+    | `NaudasAktsView.fxml` | `NaudasAktsController` | - | Inventāra (naudas) akts. |
+    | `ClientListView.fxml` | `ClientListViewController` | `styles.css` | Klientu saraksts ar meklēšanu. |
+    | `NodarbibasView.fxml` | `MainController` | `nodarbibas_styles.css` | Nodarbību reģistrācija. |
+    | `MedRequestCenterView.fxml` | `MedRequestCenterController` | `styles.css` | Medikamentu pasūtījumu veidošana. |
+    | `HospitalFormView.fxml` | `HospitalFormController` | `health.css` | Veidlapa slimnīcai. |
+    | `ActivityAnalysisCenterView.fxml` | `ActivityAnalysisCenterController` | `chart_styles.css` | Nodarbību analītika. |
+    | `LoginView.fxml` | (Iekļauts dialogos) | `login.css` | Autentifikācija (Cyberpunk stils). |
+    | `AdminToolsView.fxml` | `AdminToolsController` | `styles.css` | Administratora rīki. |
+    | `ManageJomaDialog.fxml` | `ManageJomaDialogController` | - | Aktivitāšu hierarhijas rediģēšana. |
+    | `SyncHubView.fxml` | `SyncHubController` | - | Datu konfliktu risināšana. |
+
+3.6. Datu modeļi (Domain Models)
+    - `Klients`: Pamatdati (vārds, PK, datumi, statuss).
+    - `ClientCardInfo`: Paplašinātā informācija (izglītība, intereses, valodas).
+    - `FamilyMember`: Piederīgie.
+    - `HealthCard`: Veselības dati (anamnēze, diagnožu/medikamentu ID saraksti).
+    - `Nodarbiba`: Reģistrēts nodarbības fakts.
+    - `ActivityRecord`: Aktivitātes definīcija klasifikatorā.
+    - `MedRequest` / `MedRequestItem`: Medikamentu pieprasījums un to rindu pārvaldība.
+    - `Protokols`: Sociālās rehabilitācijas protokola dati (komanda, mērķi, termiņi).
+    - `NovertesanaData` (DTO): Novērtēšanas kartes dati (punkti, datums, speciālists).
+    - `SarunasApraksts`: Sarunas saturs, secinājumi, pasākumi.
+
+3.7. Datu sinhronizācijas mehānisms
+    - **OfflineBufferService**: Uzrauga savienojumu ar centrālo datubāzi.
+    - **Lokālā DB**: Ja centrālā DB nav pieejama, `DatabaseConnectionManager` pārslēdzas uz lokālo H2 datubāzi.
+<<<<<<< HEAD
+    - **Sinhronizācija**: Kad savienojums atjaunojas, `syncPendingChanges` metode automātiski sinhronizē datus, izmantojot `pending_changes` tabulu.
+    - **Kešatmiņa**: `updateLocalCache` metode nodrošina, ka lokālā H2 datubāze satur pilnu servera datu kopiju (ieskaitot klasifikatorus), lai novērstu FK kļūdas un tukšus laukus bezsaistē.
+=======
+    - **Sinhronizācija**: Kad savienojums atjaunojas, `syncPendingChanges` metode automātiski sinhronizē datus. Startējoties notiek `performInitialSync` (Full Mirror).
+>>>>>>> 68bc6aa566bd4b49440c50d19d72c3203d4f0810
+    - **Konflikti**: Tiek risināti automātiski, balstoties uz lietotāja lomu (Admin > User) vai laika zīmogu. Kritiskos gadījumos tiek iesaistīts lietotājs.
+    - **Backup Rotācija**: `BackupManager` nodrošina ikdienas rezerves kopiju veidošanu, saglabājot pēdējās 31 dienas failus un dzēšot vecākus.
+
+======================================================================
+
+4. PROGRAMMATŪRAS PROJEKTĒJUMA SPECIFIKĀCIJA (SDD)
+
+4.1. Datu plūsmas un sekvenču diagrammas
+    Datu plūsma (Data Flow) tipiskai "Saglabāt" operācijai:
+    `View (FXML)` -> `Controller` -> `ValidationService` -> `Service Layer` -> `Repository (JDBC)` -> `MySQL`.
+    
+    **Sekvence: Klienta datu ielāde (`ClientCardController.initialize`)**
+    1. `Controller` pieprasa datus no `ClientCardService.findByClientId(id)`.
+    2. `Service` atver transakciju.
+    3. `Service` izsauc `KlientsRepository.findById()`.
+    4. `Service` izsauc `ClientCardInfoRepository` un `FamilyMemberRepository`.
+    5. `Service` apvieno datus `ClientCardInfo` objektā (DTO).
+    6. `Service` aizver transakciju un atgriež DTO kontrolierim.
+    7. `Controller` izsauc `populateFields()` metodes katrai cilnei.
+
+4.2. Stāvokļu mašīnas (State Machine) loģika
+    Klienta dzīves ciklu nosaka lauks `statuss` tabulā `klienti`.
+    
+    [SĀKUMS] -> (Reģistrācija) -> [AKTĪVS]
+    [AKTĪVS] -> (Izrakstīšana) -> [IZRAKSTĪTS]
+    [AKTĪVS] -> (Nāve) -> [MIRIS]
+    [IZRAKSTĪTS] -> (Atjaunošana) -> [AKTĪVS]
+    [MIRIS] -> (Kļūdas labojums) -> [AKTĪVS] (Tikai ar Admin tiesībām)
+    
+    *Ierobežojumi*: Nevar pievienot nodarbības klientam statusā [MIRIS] vai [IZRAKSTĪTS].
+
+4.3. Pavedienu (Threading) modelis un asinhronā I/O
+    Lai GUI būtu atsaucīgs (non-blocking), smagās operācijas notiek fonā:
+    - **JavaFX Task**: Izmantots `StatisticsDataFetcher` un `DataImportService`.
+    - **Platform.runLater()**: Izmantots, lai atjauninātu UI elementus (piem., Progress Bar, Charts) no fona pavediena.
+    - **Service**: `ClientCardService` metodes ir sinhronas, bet kontrolieri tās ietin `Task` objektos.
+
+4.4. Konkrēto moduļu specifikācija (Deep Dive)
+    
+    **Licencēšana (`lv.socialcare.license`):**
+    - **Kriptogrāfija**: Izmanto asimetrisko šifrēšanu (RSA 2048 bitu atslēgas).
+    - **Parakstīšana**: Licence (JSON) tiek parakstīta ar privāto atslēgu (servera pusē).
+    - **Verifikācija**: `SignatureUtils` izmanto `public_key.der` (iekļauts JAR), lai verificētu parakstu (`SHA256withRSA`).
+    - **LicenseManager**: Pārvalda statusus (TRIAL, LICENSED, EXPIRED). Trial periods (7 dienas) tiek saglabāts lokāli konfigurācijā.
+
+    **Statistika (`lv.socialcare.statistics`):**
+    - **StatisticsDataFetcher**: Abstrahē datu ieguves loģiku, ģenerējot dinamiskus SQL vaicājumus atkarībā no izvēlētajiem filtra kritērijiem.
+    - **Datu agregācija**: Implementē "In-Memory" agregācijas stratēģiju, izmantojot Java Stream API (`Collectors.groupingBy`), lai optimizētu datubāzes noslodzi un veiktu grupēšanu lietojumprogrammas slānī.
+    - **Vizualizācija**: `ChartManager` nodrošina vizuālās prezentācijas slāņa unifikāciju, piemērojot konsistentus stilus un interaktivitātes uzvedību visām diagrammu komponentēm.
+
+    **Nodarbības (`lv.socialcare.nodarbibas`):**
+    - **Hierarhiskā izvēle**: `MainController` nodrošina kaskādes filtrēšanu: Bloks -> Speciālists -> Joma -> Līmenis.
+    - **Datu integritāte**: `ActivityRecord` nodrošina, ka tiek saglabāta atsauce uz konkrētu aktivitātes definīciju.
+    - **Imports**: `DataImportService` ļauj importēt aktivitāšu klasifikatoru no TSV faila.
+
+    **Medikamenti (`lv.socialcare.medikamenti`):**
+    - **Statusa pārvaldība**: Pieprasījumiem ir statusi (DRAFT, COMPLETED). Pabeigtie tiek atzīmēti ar ikonu.
+    - **Gudrā rediģēšanu**: Iespēja labot jebkuru lauku (datums, ārsts, zāles) esošā sarakstā. Saglabājot tiek piedāvāta izvēle: "Pārrakstīt esošo" vai "Veidot jaunu kopiju".
+    - **Eksports**: Ģenerē Excel failus.
+
+    **Datu imports (`DataImportService`):**
+    - **TSV apstrāde**: Nolasa tabulārus datus no failiem (piem., `activities_by_level.tsv`).
+    - **Validācija**: Pārbauda datu formātu pirms ievietošanas datubāzē.
+    - **Integrācija**: Izmanto `ActivityRepository` un `ListRepository` datu saglabāšanai.
+
+======================================================================
+
+5. RESURSI UN KONFIGURĀCIJAS
+
+5.1. Excel veidnes un atskaites
+    Atrodas `src/main/resources`. Tās tiek izmantotas kā pamats dokumentu ģenerēšanai.
+    - `PilngadigoKlientuRegistrs.xlsx`: Galvenā reģistra eksporta veidne.
+    - `SocRehPlans.xlsx` / `SocAprPlans.xlsx`: Plānu veidlapas.
+    - `Medicina_slimnīcai.xlsx`: Veidlapa nosūtīšanai uz slimnīcu.
+    - `Klienta_Karte.xlsx`, `PROTOKOLS.xlsx`: Individuālo dokumentu veidnes.
+    - `Veidlapa.xlsx`, `VeidLapaNod.xlsx`: Nodarbību atskaišu veidnes.
+    - `Cita_Informacija.xlsx`: Citas informācijas veidne.
+    - `Inven_mantu akts.xlsx`: Mantu inventarizācijas akts.
+    - `Inven_naudas akts.xlsx`: Naudas inventarizācijas akts.
+    - `NovertesanaKarte.xlsx`: Novērtēšanas kartes veidne.
+    - `Sarunas_Apraksts.xlsx`: Sarunas apraksta veidne.
+    
+    **Excel Integrācijas loģika (`ExcelManager`, `ClientCardExporter`):**
+    Izmanto Apache POI bibliotēku (.xlsx formātam).
+    Datu kartēšana (Mapping) piemērs (`ClientCardExporter`):
+    - `AC1` -> Klienta lietas numurs
+    - `C6` -> Vārds, Uzvārds
+    - `AB4` -> Iestāšanās datums
+    - `D8`/`K8` -> Dzimums (X atzīme)
+    - `C10` -> Personas kods
+    - `E12` -> Rīcībspējas ierobežojumi
+    - `C17` -> Saziņas valoda
+    - `A21` -> Deklarētā adrese
+
+5.2. Lietotāja saskarnes definīcijas (FXML)
+    Faili atrodas `src/main/resources/lv/socialcare/view` un apakšmapēs.
+    - `HubView.fxml`: Galvenais panelis ar "Sidebar" un "Dashboard".
+    - `ClientCardView.fxml`: Klienta kartes konteiners.
+    - `LoginView.fxml` (iekļauts dialogos): Autentifikācijas logi.
+
+5.3. Vizuālais stils (CSS)
+    - `styles.css`: Globālie stili (krāsu palete, pogu dizains, fontu definīcijas). Definē mainīgos `-sac-primary`, `-sac-background` u.c.
+    - `chart_styles.css`: Specifiski stili diagrammām (ēnas, gradienti, animācijas).
+    - `login.css`: "Hacker/Cyberpunk" stila tēma autentifikācijas logiem.
+    - `health.css`: Specifisks stils veselības kartei.
+    - `nodarbibas_styles.css`: Stili nodarbību reģistrācijas formai.
+    - `protokols_styles.css`: Stili protokola skatam.
+    - `statistics.css`: Papildu stili statistikas moduļiem.
+
+5.4. Konfigurācijas faili
+    - `logback.xml`: Definē žurnālierakstu (logs) politiku. Konfigurēta failu rotācija (10MB, 30 dienas) un izvade uz konsoli (STDOUT).
+    - `license.txt`: Programmatūras lietošanas noteikumi.
+    - `META-INF/MANIFEST.MF`: Definē galveno klasi (`Main-Class`) izpildāmajam JAR failam.
+
+5.5. Konfigurācijas un vides pārvaldība
+    **Izstrādes vide (`.vscode/settings.json`):**
+    - `java.configuration.updateBuildConfiguration`: "automatic" - Automātiska projekta atjaunināšana.
+    - `editor.formatOnSave`: true - Koda formatēšana saglabājot.
+    - `source.organizeImports`: "explicit" - Automātiska importu kārtošana.
+
+    **Lietotnes konfigurācija (`ConfigurationService`):**
+    - Iestatījumi tiek glabāti datubāzes tabulā `configuration` (key-value pāri).
+    - `ConfigRepository` nodrošina CRUD operācijas.
+    - Kritiskie iestatījumi (DB pieslēgums) tiek glabāti lokāli šifrētā veidā, izmantojot `CryptoUtils` (AES-256).
+
+======================================================================
+
+6. DROŠĪBA, AUDITS UN KRIPTOGRĀFIJA
+
+6.1. Datu aizsardzība un Kriptogrāfija
+    - `CryptoUtils`: Nodrošina sensitīvo datu (piem., DB paroļu konfigurācijas failā) šifrēšanu. Izmanto simetrisko šifrēšanu.
+    - **Algoritmi**:
+        * Paroles: PBKDF2WithHmacSHA1 (Iterācijas: 65536, Salt: 16 baiti).
+        * Konfigurācija: AES-256 (Advanced Encryption Standard).
+    - `PasswordManager`: Izmanto vienvirziena hešēšanu (PBKDF2WithHmacSHA1) lietotāju paroļu glabāšanai. Nekad neglabā paroles atklātā tekstā.
+
+6.2. Licencēšana
+    - `LicenseManager`: Pārbauda licences faila digitālo parakstu, izmantojot `SignatureUtils` un publisko atslēgu (`public_key.der`). Tas novērš licences viltošanu.
+    - Licences statuss tiek pārbaudīts pie katras programmas palaišanas.
+
+6.3. Ierakstu bloķēšana (Concurrency Control)
+    - `RecordLockingService`: Implementē loģiku, kas neļauj diviem lietotājiem vienlaicīgi rediģēt vienu un to pašu klienta karti.
+      * Mehānisms: DB kolonna `is_locked`, `locked_by`, `locked_at`.
+      * Taimauts: Bloķēšana automātiski beidzas pēc 30 minūtēm.
+      * Pārbaude: `KlientsRepository.lockKlients` metode. Bloķētājs tiek identificēts pēc lietotāja vārda (User).
+    - `KarteOptimisticLock`: Papildu drošības slānis, kas pārbauda ieraksta versiju (`version` kolonna DB) pirms saglabāšanas, lai novērstu "lost updates".
+      * Pārbaude: `ClientCardController` pirms saglabāšanas salīdzina ielādēto `last_updated` ar DB esošo. Ja tie atšķiras -> Kļūda.
+
+6.4. Atbilstība GDPR un Audita politika
+    Sistēma ir projektēta, ievērojot "Privacy by Design" principus:
+    - **Datu minimizēšana (Art. 5(1)(c))**: Tiek vākti tikai sociālajai aprūpei nepieciešamie dati.
+    - **Integritāte un konfidencialitāte (Art. 5(1)(f))**: Nodrošināta ar `UserCredentialsRepository` (PBKDF2) un `CryptoUtils`.
+    - **Pārskatatbildība (Art. 5(2))**: `AuditLogRepository` reģistrē visas darbības ar personas datiem (kurš, ko, kad skatījās/laboja), nodrošinot izsekojamību.
+    - **Tiesības tikt aizmirstam (Art. 17)**: `AdminService` nodrošina funkcionalitāti datu neatgriezeniskai dzēšanai vai anonimizēšanai.
+
+    **Audita žurnāla struktūra (`audit_log`):**
+    | Kolonna | Apraksts |
+    |---------|----------|
+    | `timestamp` | Precīzs laiks (UTC). |
+    | `user_name` | Identificētais lietotājs (Lietotājvārds). |
+    | `action` | Darbības veids (VIEW, EDIT, DELETE, EXPORT). |
+    | `target_entity` | Objekts (piem., "Klients: 123456-12345"). |
+    | `details` | JSON formātā: `{old_value: "...", new_value: "..."}`. |
+
+    **Pesimistiskā bloķēšana (Pessimistic Locking):**
+    - `RecordLockingService` izmanto `SELECT ... FOR UPDATE` vai speciālu `is_locked` kolonnu.
+    - Novērš situāciju, kad divi lietotāji vienlaicīgi atver rediģēšanas logu un pārraksta viens otra datus.
+    - Bloķējums tiek automātiski noņemts pēc laika noilguma vai sesijas beigām.
+
+6.5. Lietotāju lomu un tiesību matrica
+    Sistēma izmanto lietotāju lomu balstītu piekļuves kontroli (RBAC).
+
+    **1. Lietotājs (Sociālais darbinieks):**
+    - **Autentifikācija:** Piesaistīta konkrētajam lietotājam.
+    - **Identifikācija:** Sistēma izmanto pieslēgušos lietotāju (Session User) visu darbību auditam un ierakstu bloķēšanai.
+    - **Sesija:** Iespēja izmantot "Atcerēties mani" funkciju ilgstošai sesijai.
+
+    **2. Administrators (ADMIN):**
+    - **Autentifikācija:** Administratora konts ar pilnām tiesībām.
+    - **Drošības ierobežojums:** Administratoram ir atļauta tikai viena aktīva sesija vienlaicīgi. Mēģinot pieslēgties no cita datora, iepriekšējā sesija jāpārtrauc.
+    - **Tiesības:** Nepieciešama, lai piekļūtu `AdminToolsController` funkcijām.
+
+    | Funkcija                      | ADMIN                 | USER                 |
+    |-------------------------------|:---------------------:|:--------------------:|
+    | Skatīt/Rediģēt klientu datus  |           +           |           +          |
+    | Veidot plānus/atskaites       |           +           |           +          |
+    | Pārvaldīt klasifikatorus      |           +           |           +          |
+    | **Atvērt Admin rīkus**        |           +           |           -          |
+    | **Dzēst datus (Purge)**       |           +           |           -          |
+    | **Atiestatīt lietotāja paroli**|          +           |           -          |
+    | **Sistēmas konfigurācija**    |           +           |           -          |
+
+6.6. Sesiju pārvaldība un "Atcerēties mani" funkcionalitāte
+    - **Darbības princips**: Izmantojot "Atcerēties mani", tiek ģenerēts unikāls, kriptogrāfiski drošs žetons (Token), kas tiek saglabāts lietotāja datorā (Java Preferences API) un datubāzē (`user_sessions`).
+    - **Drošība**: Parole nekad netiek glabāta lokāli. Žetons ir vienreizējs un piesaistīts konkrētam datoram.
+    - **Derīguma termiņš**: Lietotājs var izvēlēties sesijas ilgumu (1h, 8h, 24h).
+    - **Izrakstīšanās**:
+        * "Izrakstīties": Dzēš žetonu gan lokāli, gan serverī. Nākamreiz nepieciešama parole.
+        * "Iziet un saglabāt": Aizver programmu, saglabājot žetonu. Nākamreiz parole nav nepieciešama (ja termiņš nav beidzies).
+    - **Konfliktu novēršana**: Sistēma nodrošina, ka vienlaicīgi ar vienu lietotāja kontu var strādāt tikai no vienas darbstacijas.
+
+6.7. Aizsardzība pret kiberuzbrukumiem (XSS, SQL Injection)
+    - **SQL Injection**: Visi SQL vaicājumi izmanto `PreparedStatement` ar parametru piesaisti.
+    - **XSS**: Ievadītie dati tiek apstrādāti kā vienkāršs teksts, nevis HTML/JavaScript. `WebView` komponentes saturs tiek kontrolēts.
+    - **Buffer Overflow**: Ievades laukiem ir garuma ierobežojumi, un datubāzes shēma definē maksimālos izmērus (`VARCHAR(255)`).
+
+======================================================================
+
+7. GUI UN UX APRAKSTS
+
+7.1. Galvenais panelis (HubView)
+    - **Dashboard**: Informācijas panelis, kas agregē kritiskos sistēmas rādītājus dinamiskās kartītēs:
+        * **Statistika**: Kopējais klientu skaits, šomēnes uzņemtie un šomēnes aizgājušie klienti.
+        * **Termiņu kontrole**: Brīdinājumi par dokumentiem, kam beidzies vai tuvojas termiņš.
+        * **Izvērtēšana**: Atgādinājumi par klientiem, kam nepieciešama periodiskā novērtēšana.
+    - **Sidebar**: Hierarhiska navigācijas izvēlne, kas grupēta pēc funkcionālajiem domēniem.
+    - **Interaktivitāte (Drill-down)**: Klikšķinot uz kopsavilkuma kartītēm ("Jauni", "Aktuālie", "Aizgājuši"), tiek atvērts filtrēts saraksts.
+    - **Live Feed**: Notikumu plūsmas komponente, kas attēlo sistēmas aktivitātes hronoloģiskā secībā.
+    - **Dzimšanas dienas**: Panelis ar tuvākajām klientu dzimšanas dienām.
+
+    **Novērtēšanas karte (NovertesanaKarteView):**
+    - **Divi režīmi**:
+        * **Bāzes izveide**: Ja klientam nav vēstures, aktīva ir tikai labā puse ("Bāzes novērtējums"). Obligāti jāaizpilda visi punkti.
+        * **Dinamikas novērtēšana**: Ja ir vēsture, labā puse ir "Read-Only" (rāda iepriekšējo), bet aktīva ir kreisā puse ("Aktuālais").
+    - **Vizuālā atdalīšana**: Skaidri virsraksti un fona krāsas atšķirības starp "Bāzi" un "Aktuālo".
+    - **Validācija**: Saglabāšana iespējama tikai tad, ja visi punkti ir novērtēti (0-4).
+    - **Excel eksports**: Punkti tiek eksportēti kā skaitļi (Numeric), lai nodrošinātu formulu darbību.
+
+7.2. Klienta karte (ClientCardView)
+    - Strukturēta, izmantojot `TabPane` konteineru, lai segmentētu liela apjoma domēna datus.
+    - **Modularitāte**: Katra cilne (Tab) tiek ielādēta no atsevišķa FXML resursa, nodrošinot skatu izolāciju.
+    - **Lazy Loading**: Resursietilpīgo cilņu inicializācija tiek atlikta līdz pieprasījuma brīdim (On-Demand), optimizējot sākotnējo ielādes laiku.
+
+7.3. Statistikas moduļi
+    - Izmanto JavaFX `Charts` (PieChart, BarChart, LineChart).
+    - `chart_styles.css` nodrošina modernu izskatu (ēnas, noapaļoti stūri, "hover" efekti).
+    - Katrs atskaites skats (piem., `DemographicsReportView`) satur filtrus (periods, grupa) un eksporta pogas.
+    - Atskaites tiek atvērtas tiešā skatā, minimizējot liekus ievada dialogus (UX optimizācija).
+    
+    **Detalizēts statistikas logu apraksts:**
+
+    | Atskaite | Ko dara | Mērķis | Uzdevums | Rezultāts |
+    |----------|---------|--------|----------|-----------|
+    | **Demogrāfijas pārskats** (`DemographicsReport`) | Analizē klientu sadalījumu pēc dzimuma un reģionālās piederības. | Sniegt vizuālu priekšstatu par klientu populācijas struktūru. | Identificēt dominējošās sociālās grupas plānošanai. | Sektoru diagrammas (PieChart) un kopsavilkuma tabula. |
+    | **Vecuma struktūra** (`AgeDistributionReport`) | Grupē klientus pēc vecuma intervāliem (18-30, 31-50, utt.). | Pielāgot aprūpes plānus un aktivitātes atbilstoši vecuma specifikai. | Analizēt mērķauditorijas novecošanās tendences. | Histogramma (BarChart) ar vecuma grupām. |
+    | **Klientu kustība/Bilance** (`ClientBalanceReport`) | Uzskaita iestājušos, izrakstītos un mirušos klientus laika periodā. | Izsekot klientu skaita izmaiņām un rotācijai. | Nodrošināt precīzus datus gada pārskatiem. | Stabiņu diagramma ar salīdzinājumu pa mēnešiem. |
+    | **Aprūpes līmeņi** (`CareLevelReport`) | Parāda klientu sadalījumu pēc aprūpes līmeņiem (1.-4.). | Novērtēt personāla noslodzi un nepieciešamos resursus. | Pamatot štatu saraksta izmaiņas vai finansējuma pieprasījumus. | Sektoru diagramma (PieChart). |
+    | **Uzturēšanās ilgums** (`ClientStayDurationReport`) | Aprēķina vidējo un mediāno uzturēšanās laiku institūcijā. | Analizēt pakalpojuma ilgtermiņa pieprasījumu un rotāciju. | Prognozēt vietu atbrīvošanos. | Līniju vai stabiņu diagramma. |
+    | **Dokumentu termiņi** (`DocumentExpiryReport`) | Atlasa klientus, kuriem tuvojas dokumentu (pasu, VDEĀVK) termiņa beigas. | Novērst juridisku problēmu rašanos nederīgu dokumentu dēļ. | Proaktīvi brīdināt sociālo darbinieku par veicamajām darbībām. | Saraksts ar "luksofora" indikāciju (Sarkans/Dzeltens). |
+    | **Nodarbību kopsavilkums** (`ActivitySummaryReport`) | Apkopo novadīto nodarbību skaitu pa veidiem (mūzika, māksla, fizioterapija). | Novērtēt rehabilitācijas programmas intensitāti un daudzveidību. | Atskaitīties par sniegtajiem pakalpojumiem. | Datu tabula un diagramma. |
+    | **Speciālistu noslodze** (`SpecialistActivityReport`) | Uzskaita katra darbinieka novadīto nodarbību skaitu un ilgumu. | Personāla darba izpildes novērtēšana (KPI). | Sabalansēt darba slodzi starp speciālistiem. | Salīdzinošā stabiņu diagramma. |
+    | **Aktivitāšu dinamika** (`ActivityDynamicsReport`) | Attēlo nodarbību apmeklējuma tendences laika gaitā. | Identificēt sezonalitāti vai izmaiņas klientu aktivitātē. | Plānot nodarbību grafiku nākotnei. | Līniju diagramma (LineChart). |
+    | **Kopsavilkums** (`SummaryReport`) | Vispārējs pārskats par klientu statusiem (Aktuālie/Bijušie). | Ātrs ieskats kopējā situācijā. | Vadības informēšana. | Sektoru diagramma (PieChart). |
+
+7.4. Specializētie moduļi
+    - **Nodarbību reģistrācija (`NodarbibasView`)**: Ļauj reģistrēt nodarbības, izvēloties no hierarhiska klasifikatora. Automātiski aizpilda mērķus un uzdevumus.
+    - **Medikamentu centrs (`MedRequestCenterView`)**: Ļauj veidot medikamentu pasūtījumus, pievienot rindas, saglabāt sagataves un eksportēt uz Excel.
+      * Ietver "Gudro rediģēšanu" un dublikātu kontroli.
+    - **Veselības karte (`HealthFormView`)**: Pārskats par klienta diagnozēm un terapiju.
+
+======================================================================
+
+8. UZTURĒŠANA UN KĻŪDU PĀRVALDĪBA
+
+8.1. Labās prakses
+    - **Kods**: Ievēroti Java "Naming Conventions" (CamelCase klasēm, camelCase metodēm).
+    - **Komentāri**: Javadoc izmantots publiskajām metodēm un sarežģītai loģikai.
+    - **Kļūdu apstrāde**: Izmantoti specifiski izņēmumi (`DataAccessException`, `LockException`), kas tiek pārtverti GUI līmenī, parādot lietotājam draudzīgu `ErrorDialog`.
+
+8.2. Paplašināšanas iespējas
+    - **Jaunas atskaites**: Jāizveido jauns FXML skats `lv.socialcare.statistics` pakotnē, jāimplementē kontrolieris, kas manto `BaseReportController`, un jāreģistrē `HubController` navigācijā.
+    - **Jauni datu lauki**: Jāpapildina `Klients` klase, jāatjaunina `KlientsRepository` SQL vaicājumi un `SchemaManager` migrācijas skripti.
+
+8.3. Pilns kļūdu kodu un izņēmumu katalogs
+    
+    | Kods | Izņēmuma klase | Ziņojums lietotājam | Cēlonis | Risinājums |
+    |------|----------------|---------------------|---------|------------|
+    | ERR-001 | `LockException` | "Ierakstu rediģē cits lietotājs." | Ieraksts bloķēts `RecordLockingService`. | Pagaidīt vai Admin var atbloķēt. |
+    | ERR-002 | `KarteValidationException` | "Personas kods nav derīgs." | Regex neatbilstība vai kontrolsumma. | Pārbaudīt ievadi. |
+    | ERR-003 | `SQLIntegrityConstraint...` | "Nevar dzēst: piesaistīti dati." | FK ierobežojums (piem., ir nodarbības). | Vispirms dzēst saistītos datus. |
+    | ERR-004 | `DataAccessException` | "Nav savienojuma ar datubāzi." | Tīkla kļūda vai DB down. | Pārbaudīt MySQL servisu. |
+    | ERR-005 | `LicenseException` | "Licence nav derīga." | Paraksta verifikācijas kļūda. | Atjaunot `license.txt`. |
+
+8.4. Pakalpojumu līmeņa vienošanās (SLA)
+    Izstrādātājs apņemas nodrošināt šādus reakcijas un kļūdu novēršanas laikus, atkarībā no incidenta prioritātes:
+
+    | Prioritāte | Apraksts | Reakcijas laiks | Novēršanas laiks (Target) |
+    |------------|----------|-----------------|---------------------------|
+    | **Kritiska** | Sistēma nav pieejama vai dati ir apdraudēti. Darbs pilnībā apstājies. | 1 stunda | 4-8 darba stundas |
+    | **Augsta** | Nedarbojas būtiska funkcionalitāte (piem., nevar saglabāt klientu), nav apiešanas ceļa. | 4 stundas | 24-48 stundas |
+    | **Vidēja** | Kļūda ierobežo darbību, bet ir iespējams "workaround" (apiešanas ceļš). | 1 darba diena | 5-10 darba dienas |
+    | **Zema** | Kosmētiski defekti, pareizrakstības kļūdas, neērtības, kas neietekmē funkcionalitāti. | 3 darba dienas | Nākamajā plānotajā versijā |
+
+======================================================================
+
+9. KVALITĀTES KONTROLE (QA) UN TESTĒŠANA
+
+9.1. Testēšanas stratēģija un pārklājums
+    - **Mērķis**: Sasniegt >80% koda pārklājumu (Code Coverage) biznesa loģikas klasēm (`Service` pakotne) un >95% utilītklasēm (`ValidationService`, `CryptoUtils`).
+    - **Rīki**: JUnit 5, Mockito, JaCoCo (pārklājuma analīzei).
+    - **Pieeja**: Tiek izmantoti gan Vienībtesti (Unit Test) atsevišķu klašu pārbaudei, gan Integrācijas testi (Integration Test) datubāzes un servisu sadarbības pārbaudei.
+
+9.2. Vienībtesti un integrācijas testi
+    **Testu saraksts (Test Cases):**
+    - **Infrastruktūras un Konfigurācijas testi:**
+        * `ApplicationSmokeTest`: "Dūmu tests" - pārbauda, vai aplikācija startējas un kritiskās klases ir pieejamas.
+        * `DataFilesAvailabilityTest`: Pārliecinās, ka visi nepieciešamie resursi (Excel veidnes) ir pieejami.
+        * `AllFxmlLoadTest`: Pārbauda, vai visi FXML skati ir sintaktiski pareizi un ielādējami.
+        * `ProjectHealthCheckTest`: Vispārēja sistēmas veselības pārbaude (datumi, kārtošana, validācija).
+        * `BaseHeavyTest`: Bāzes klase smagajiem integrācijas testiem, kas nodrošina Testcontainers konfigurāciju.
+        * `UserInterfaceE2ETest`: E2E tests, kas simulē lietotāja darbības ar UI (TestFX).
+        * `MainExitTest`: Pārbauda programmas aizvēršanas loģiku un resursu atbrīvošanu.
+    - **Biznesa Loģikas un Servisu testi:**
+        * `AdminServiceTest`: Pārbauda administratora servisa drošības un funkcionalitātes aspektus.
+        * `ClientCardServiceTest`: Pārbauda servisa slāņa loģiku datu apvienošanai un saglabāšanai.
+        * `KarteDuplicateDetectionServiceTest`: Pārbauda dublikātu noteikšanas loģiku.
+        * `KarteValidationServiceTest`: Pārbauda ievades lauku validācijas noteikumus (Regex).
+        * `RecordLockingServiceTest`: Pārbauda ierakstu bloķēšanas mehānismu (Concurrency).
+        * `ActivityRepositoryTest`: Pārbauda aktivitāšu žurnāla loģiku (t.sk. "Soft Delete").
+        * `ClientChangeDetectorTest`: Pārbauda izmaiņu noteikšanas loģiku klienta datu rediģēšanā.
+        * `SaveTaskHelperTest`: Pārbauda asinhrono uzdevumu palīgklases darbību un UI stāvokļa pārvaldību.
+        * `NotificationRepositoryTest`: Pārbauda paziņojumu vēstures saglabāšanas un nolasīšanas loģiku.
+        * `UserSessionRepositoryTest`: Pārbauda aktīvo lietotāju sesiju pārvaldības loģiku.
+        * `OfflineBufferServiceTest`: Pārbauda bezsaistes bufera funkcionalitāti (datu saglabāšanu lokāli un sinhronizāciju).
+        * `KlientsRepositoryOfflineTest`: Pārbauda KlientsRepository uzvedību tīkla kļūdu gadījumā (Offline režīms).
+        * `ListRepositoryOfflineTest`: Pārbauda ListRepository uzvedību tīkla kļūdu gadījumā (Offline režīms).
+        * `MedRequestRepositoryOfflineTest`: Pārbauda MedRequestRepository uzvedību tīkla kļūdu gadījumā.
+    - **Datu Bāzes un Integrācijas testi:**
+        * `KlientsRepositoryIntegrationTest`: Integrācijas tests ar H2 datubāzi (CRUD operācijas).
+        * `DataIntegrityTest`: Pārbauda datu integritāti un kaskādes dzēšanu.
+        * `DatabaseMigrationTest`: Simulē versiju maiņu un pārbauda datu saglabāšanos.
+        * `BackupRestoreTest`: Pārbauda datu atjaunošanu no rezerves kopijas (simulēta katastrofa).
+        * `FullSystemFlowTest`: Simulē pilnu saglabāšanas transakciju ar Mockito.
+        * `DatabaseResilienceTest`: Pārbauda sistēmas noturību pret DB savienojuma pārrāvumiem.
+    - **Drošības un Veiktspējas testi:**
+        * `NewArchitectureIntegrationTest`: Integrācijas tests jaunās arhitektūras komponentēm (PlanService, ValidationService).
+        * `SystemSecurityTest`: Pārbauda digitālos parakstus un aizsardzību pret XSS/SQL injekcijām.
+        * `SecurityPenetrationTest`: Simulē hakeru uzbrukumus (Penetration Testing).
+        * `SystemPerformanceTest`: Mēra sistēmas ātrdarbību ar lielu datu apjomu (1000+ ieraksti).
+        * `SystemStressTest`: Pārbauda sistēmas stabilitāti pie vienlaicīgas piekļuves (Concurrency).
+        * `RaceConditionTest`: Pārbauda datu konsistenci, kad vairāki pavedieni mēģina mainīt vienu ierakstu.
+        * `ChaosMonkeyTest`: "Haosa inženierija" - ievada nekorektus datus, lai pārbaudītu kļūdu apstrādi.
+        * `ConcurrentDataAccessStressTest`: Stresa tests vienlaicīgai datu piekļuvei un modificēšanai.
+        * `LargeScaleDataPerformanceTest`: Veiktspējas tests ar lielu datu apjomu (50k+ ieraksti).
+        * `LockingStressTest`: Pārbauda ierakstu bloķēšanu pie augstas konkurences (Race Condition).
+        * `SecurityVulnerabilityTest`: Pārbauda specifiskas ievainojamības (piem., lomu eskalācija).
+        * `DataValidationStressTest`: Stresa tests datu validācijai (fuzzing un robežvērtības).
+        * `OptimisticLockingTest`: Pārbauda optimistiskās bloķēšanas loģiku un konfliktu detektēšanu.
+        * `ClientHistoryValidationTest`: Pārbauda klientu vēstures un datumu loģisko validāciju.
+        * `ComprehensiveSecurityStressTest`: Visaptverošs kiberdrošības un sistēmas noturības tests (SQLi, XSS, DoS, Privilēģijas).
+    - **Dokumentācijas un Koda Sinhronizācija:**
+        * `DocumentationConsistencyTest`: Pārbauda, vai kods atbilst dokumentācijai (klases, DB shēma).
+        * `DeepDocumentationAuditTest`: Veic padziļinātu auditu (failu eksistence, atslēgvārdi, testu pārklājums).
+        * `ExcelFunctionalityTest`: Pārbauda Excel eksporta un satura validāciju.
+
+9.3. Manuālās testēšanas scenāriji
+    Kritiskās funkcijas, kas jāpārbauda manuāli pirms katras relīzes:
+    
+    | ID | Scenārijs | Soļi | Gaidāmais rezultāts |
+    |----|-----------|------|---------------------|
+    | MT-01 | UI Responsiveness | Mainīt loga izmēru uz 800x600. | Elementi pārkārtojas, nekas nepazūd (`ResponsiveManager`). |
+    | MT-02 | Excel Eksports | Atvērt ģenerēto failu MS Excel. | Fails atveras bez kļūdām, dati ir pareizajās šūnās. |
+    | MT-03 | Drukāšana | Nospiest "Drukāt" no priekšskatījuma. | Printera dialogs atveras. |
+
+======================================================================
+
+10. TEHNISKĀ ANALĪZE UN DATU VĀRDNĪCA (PIELIKUMS A)
+
+10.1. Datu bāzes normalizācija
+    Datu bāzes shēma (`SchemaManager`) ir projektēta, ievērojot Trešo normalizācijas formu (3NF), lai novērstu datu redundanci un anomālijas:
+    - **1NF (Atomiskums)**: Visi atribūti ir atomāri (piem., adrese sadalīta, ja nepieciešams, saraksti izdalīti atsevišķās tabulās).
+    - **2NF (Pilna funkcionālā atkarība)**: Visas ne-atslēgas kolonnas ir pilnībā atkarīgas no primārās atslēgas (`id`).
+    - **3NF (Tranzitīvās atkarības neesamība)**: Klasifikatori (piem., `aprupes_limeni`, `diagnozes`) ir izdalīti atsevišķās "Lookup" tabulās, un galvenajā `klienti` tabulā tiek izmantotas tikai ārējās atslēgas (Foreign Keys).
+    
+    Relāciju piemērs:
+    `klienti` (1) ---- (N) `nodarbibas`
+    `klienti` (1) ---- (N) `med_requests`
+    `klienti` (M) ---- (N) `diagnozes` (caur `client_diagnoses` saisttabulu)
+    `klienti` (M) ---- (N) `medikamenti` (caur `client_medications` saisttabulu)
+
+10.2. Detalizēta datu vārdnīca (Data Dictionary)
+    Tabula: `klienti` (Galvenā entītija)
+    
+    | Kolonna | Tips | Atribūti | Apraksts | Validācija |
+    |---------|------|----------|----------|------------|
+    | `id` | BIGINT | PK, AI, NOT NULL | Unikālais identifikators. | - |
+    | `personas_kods` | VARCHAR(12) | UNIQUE, NOT NULL | Personas kods. | Regex: `^\d{6}-\d{5}$` |
+    | `klienta_lietas_numurs` | VARCHAR(50) | UNIQUE | Lietas numurs. | - |
+    | `klienta_vards_uzvards` | VARCHAR(255) | NOT NULL | Vārds un Uzvārds. | - |
+    | `birth_date` | DATE | - | Dzimšanas datums. | - |
+    | `iestasanas_datums` | DATE | - | Iestāšanās datums. | - |
+    | `aiziesanas_datums` | DATE | - | Aiziešanas datums. | - |
+    | `aiziesanas_iemesls_id` | INT | FK | Aiziešanas iemesls. | - |
+    | `aiziesanas_dokuments` | TEXT | - | Dokuments par aiziešanu. | - |
+    | `dzimums` | VARCHAR(10) | - | Dzimums. | - |
+    | `ieprieksejas_dzivesvietas_adrese` | TEXT | - | Iepriekšējā adrese. | - |
+    | `ievietosanas_pamatojums` | TEXT | - | Pamatojums. | - |
+    | `persona_kura_pienemusi` | VARCHAR(255) | - | Pieņēmēja vārds. | - |
+    | `jaunas_dzivesvietas_adrese` | TEXT | - | Jaunā adrese. | - |
+    | `gimenes_arsts_id` | INT | FK | Ģimenes ārsts. | - |
+    | `psihiatrs_id` | INT | FK | Psihiatrs. | - |
+    | `aprupes_limenis_id` | INT | FK | Aprūpes līmenis. | - |
+    | `aprupes_limenis_pirms_id` | INT | FK | Aprūpes līmenis pirms. | - |
+    | `invaliditates_grupa_id` | INT | FK | Invaliditātes grupa. | - |
+    | `invaliditates_apliecibas_numurs` | VARCHAR(255) | - | Apliecības Nr. | - |
+    | `pakalpojuma_veids_id` | INT | FK | Pakalpojuma veids. | - |
+    | `id_kartes_termins` | DATE | - | ID kartes termiņš. | - |
+    | `pases_termins` | DATE | - | Pases termiņš. | - |
+    | `invaliditates_termins` | DATE | - | Invaliditātes termiņš. | - |
+    | `invaliditate_beztermins` | BOOLEAN | - | Beztermiņa invaliditāte. | - |
+    | `zinas_par_piederigajiem` | TEXT | - | Ziņas par piederīgajiem. | - |
+    | `is_deleted` | BOOLEAN | - | Dzēšanas karogs. | - |
+    | `is_locked` | BOOLEAN | - | Ieraksta bloķēšanas statuss. | - |
+    | `locked_at` | DATETIME | - | Bloķēšanas laiks. | - |
+    | `locked_by` | VARCHAR(255) | - | Lietotājs, kurš bloķējis. | - |
+    | `last_updated` | DATETIME | - | Pēdējo izmaiņu laiks (Optimistic Locking). | - |
+    | `version` | BIGINT | DEFAULT 0 | Versijas kontrole (Optimistic Locking). | - |
+    | `period_index` | INT | Aprēķināts | Perioda kārtas numurs (P1, P2...). | - |
+    | `total_periods` | INT | Aprēķināts | Kopējais periodu skaits klientam. | - |
+
+10.3. Algoritmiskā sarežģītība
+    Kritisko komponentu veiktspējas analīze (Big O notation):
+    
+    - **Klientu meklēšana (`KlientsRepository.search`)**:
+      Izmanto SQL indeksus (`IDX_PERSONAS_KODS`, `IDX_VARDS_UZVARDS`).
+      Sarežģītība: O(log N) (B-Tree indeksa meklēšana datubāzē).
+      
+    - **Sarakstu kārtošana (`NaturalOrderComparator`)**:
+      Implementē pielāgotu "cilvēkam draudzīgu" kārtošanu (piem., "A-2" < "A-10").
+      Sarežģītība: O(N log N) (Java `TimSort` algoritms), kur salīdzināšanas operācija ir O(L) (virknes garums).
+      
+    - **Paroļu hešēšana (`PasswordManager`)**:
+      PBKDF2 algoritms ar konfigurējamu iterāciju skaitu (noklusējums: 65536).
+      Sarežģītība: O(k * I), kur k ir atslēgas garums un I ir iterāciju skaits. Tas apzināti ir lēns, lai novērstu "Brute-force" uzbrukumus.
+      
+10.4. Datu bāzes entītiju shēma (ERD)
+    Zemāk shematiski attēlotas galvenās sistēmas entītijas un to strukturālās attiecības:
+    Primārās atslēgas (PK) un Ārējās atslēgas (FK) norādītas iekavās.
+
+    [CORE MODULE - KLIENTI]
+    +---------------------------+
+    |         KLIENTI           |
+    +---------------------------+
+    | PK id                     |
+    |    personas_kods          |
+    |    klienta_lietas_numurs  |
+    |    klienta_vards_uzvards  |
+    |    iestasanas_datums      |
+    |    aiziesanas_datums      |
+    | FK aiziesanas_iemesls_id  |
+    | FK gimenes_arsts_id       |
+    | FK psihiatrs_id           |
+    | FK aprupes_limenis_id     |
+    | FK invaliditates_grupa_id |
+    |    ... (citi lauki)       |
+    +-------------+-------------+
+                  | 1
+                  |
+                  | 1:1 (Paplašinātā informācija)
+                  v
+    +-----------------------------+       1:N       +------------------+
+    |      CLIENT_CARD_INFO       | <-------------> |  FAMILY_MEMBERS  |
+    +-----------------------------+                 +------------------+
+    | PK,FK client_id             |                 | PK id            |
+    |       ricibas_spejas...     |                 | FK client_id     |
+    | FK    gimenes_stavoklis_id  |                 |    name          |
+    | FK    attiecibas_gimene_id  |                 |    relationship  |
+    | FK    parvietosanas_id      |                 |    contact_info  |
+    +-------------+---------------+                 +------------------+
+                  |
+                  | M:N (Caur saisttabulām)
+                  v
+    [LOOKUP TABLES: dokumentu_tipi, valodu_tipi, interesu_tipi, paliglidzeklu_tipi]
+
+    [HEALTH MODULE]
+    +----------------+       M:N       +----------------+
+    |  HEALTH_CARDS  | <-------------> |   DIAGNOZES    |
+    +----------------+ (client_diagnoses) +----------------+
+    | PK id          |                 | PK id          |
+    | FK client_id   |                 |    name        |
+    |    anamnesis   |                 +----------------+
+    +-------+--------+
+            |                M:N       +----------------+
+            +------------------------> |  MEDIKAMENTI   |
+                   (client_medications)| PK id          |
+                                       |    name        |
+                                       +----------------+
+
+    [ACTIVITIES MODULE]
+    +----------------+       1:N       +------------------+       N:1       +------------------+
+    |    KLIENTI     | <-------------> |    NODARBIBAS    | <-------------> |    ACTIVITIES    |
+    +----------------+                 +------------------+                 +------------------+
+                                       | PK id            |                 | PK id            |
+                                       | FK klients_id    |                 |    joma          |
+                                       | FK activity_id   |                 |    limenis       |
+                                       | FK darbinieks_id |                 |    merkis        |
+                                       |    datums        |                 |    uzdevums      |
+                                       |    merkis        |                 +------------------+
+                                       |    vertejums_id  |                 |    last_updated  |
+                                       +------------------+                 +------------------+
+
+    [OFFLINE SYNC]
+    +------------------+
+    | PENDING_CHANGES  |
+    +------------------+
+    | PK id            |
+    |    entity_type   |
+    |    entity_id     |
+    |    change_type   |
+    |    created_at    |
+    +------------------+
+
+    [PLANS MODULE]
+    +----------------+       1:N       +------------------+       1:N       +------------------+
+    |    KLIENTI     | <-------------> |      PLANS       | <-------------> |    PLAN_ITEMS    |
+    +----------------+                 +------------------+                 +------------------+
+                                       | PK id            |                 | PK id            |
+                                       | FK client_id     |                 | FK plan_id       |
+                                       |    plan_type     |                 |    joma          |
+                                       |    plan_date     |                 |    merkis        |
+                                       |    aprupes_lim...|                 |    uzdevumi      |
+                                       +------------------+                 +------------------+
+
+    [MEDICINE REQUESTS MODULE]
+    +------------------+       1:N       +-----------------------+       N:1       +----------------+
+    |   MED_REQUESTS   | <-------------> |   MED_REQUEST_ITEMS   | <-------------> |    KLIENTI     |
+    +------------------+                 +-----------------------+                 +----------------+
+    | PK id            |                 | PK id                 |
+    |    name          |                 | FK request_id         |
+    |    status        |                 | FK client_id          |
+    |    creation_date |                 |    medication_name    |
+    +------------------+                 |    doctor_name        |
+                                         +-----------------------+
+
+    [PROTOCOLS MODULE]
+    +-----------------------+
+    |       PROTOKOLI       |
+    +-----------------------+
+    | PK id                 |
+    | FK client_id          |
+    |    novertesanas_vieta |
+    |    novertesanas_datums|
+    | FK vaditajs_id        |
+    |    komanda_ids        |
+    |    situacija_no       |
+    |    situacija_lidz     |
+    |    soc_darb_viedoklis |
+    |    medmasas_viedoklis |
+    |    aprupetaja_viedoklis|
+    |    risku_grupas       |
+    |    reh_jomas          |
+    |    apr_jomas          |
+    | FK protokoleja_id     |
+    |    aprupes_limenis    |
+    | FK uzraudzibas_veids_id|
+    +-----------------------+
+    
+    [ASSESSMENT MODULE]
+    +-----------------------+
+    |  NOVERTESANAS_KARTES  |
+    +-----------------------+
+    | PK id                 |
+    | FK client_id          |
+    |    date               |
+    |    place              |
+    |    specialist_name    |
+    |    scores_json        |
+    |    last_updated       |
+    +-----------------------+
+
+
+    [SYSTEM & SECURITY MODULE]
+    +------------------+    +------------------+    +------------------+
+    |    AUDIT_LOG     |    |  USER_SESSIONS   |    | USER_CREDENTIALS |
+    +------------------+    +------------------+    +------------------+
+    | PK id            |    | PK session_id    |    | PK pc_name       |
+    |    user_name     |    |    user_name     |    |    password_hash |
+    |    action        |    |    last_ping     |    |    password_salt |
+    |    target_entity |    +------------------+    +------------------+
+    |    timestamp     |
+    +------------------+
+
+    [CONFIGURATION]
+    +------------------+
+    |  CONFIGURATION   |
+    +------------------+
+    | PK config_key    |
+    |    config_value  |
+    +------------------+
+
+    [OFFLINE SYNC]
+    +------------------+
+    | PENDING_CHANGES  |
+    +------------------+
+    | PK client_id     |
+    |    change_time...|
+    +------------------+
+
+    [KLASIFIKATORI (LOOKUP TABLES)]
+    Sistēma izmanto plašu klasifikatoru kopu datu normalizācijai (visi ar struktūru: id, name):
+    - Personāls: arsti, psihiatri, atbildigie
+    - Klienta statuss: aprupes_limeni, invaliditates_grupas, aiziesanas_iemesli, pakalpojumu_veidi
+    - Sociālie dati: gimenes_stavokli, attiecibu_veidi, parvietosanas_statusi
+    - Nodarbību dati: motivacija, gaita, noskanojums, vertejums, izpildes_laiki
+    - Citi: dokumentu_tipi, paliglidzeklu_tipi, interesu_tipi, valodu_tipi
+
+======================================================================
+
+11. SISTĒMAS INTEGRĀCIJA UN API (PIELIKUMS B)
+
+11.1. Iekšējo servisu API un Notikumu kopne
+    - **Notikumu katalogs (Event Bus)**:
+      | Notikums | Avots | Klausītāji | Apraksts |
+      |----------|-------|------------|----------|
+      | `ClientDataChangedEvent` | `ClientCardService` | `HubController`, `ClientListViewController` | Signalizē, ka jāpārlādē saraksti. |
+      | `SessionExpiredEvent` | `SessionManager` | `MainController` | Aizver logus, parāda Login. |
+      | `NotificationEvent` | Jebkurš serviss | `HubController` | Parāda "Toast" paziņojumu stūrī. |
+
+11.2. Datu struktūru (JSON) paraugi
+    **Medikamentu pieprasījuma eksports (`MedRequest`):**
+    ```json
+    {
+      "requestId": 101,
+      "createdDate": "2023-10-27",
+      "items": [
+        { "medication": "Ibumetin 400mg", "quantity": 2, "patientId": 55 },
+        { "medication": "Paracetamol", "quantity": 1, "patientId": 55 }
+      ]
+    }
+    ```
+
+11.3. Ārējās saskarnes
+    - **Eksports uz Excel**: Sistēma izmanto Apache POI bibliotēku, lai ģenerētu .xlsx failus.
+    - **Imports no TSV**: `DataImportService` nodrošina aktivitāšu klasifikatora importu no tabulāriem datiem.
+      * Datu apmaiņa notiek vienvirziena režīmā (Sistēma -> Excel fails).
+      * Tiek atbalstīta veidņu izmantošana (Template-based generation), saglabājot formatējumu un stilus.
+
+======================================================================
+
+12. SISTĒMAS ARHITEKTŪRAS UN LIETOTĀJA PIEREDZES SINTĒZE
+
+12.1. Ārējā puse (Frontend/UX)
+    Lietotājam sistēma prezentējas kā "Black Box" ar uzsvaru uz vienkāršību un drošību:
+    - **Vizuālā hierarhija**: Svarīgākā informācija (brīdinājumi, termiņi) tiek izcelta ar krāsu kodiem (sarkans/dzeltens/zaļš).
+    - **Atsaucība (Responsiveness)**: Interfeiss pielāgojas dažādiem ekrāna izmēriem, izmantojot `ResponsiveManager`.
+    - **Kļūdu tolerance**: Lietotājs tiek pasargāts no nejaušas datu dzēšanas ar apstiprinājuma dialogiem un "Undo" iespējām (kur tas tehniski iespējams).
+    - **Plūdenums**: Pārejas starp skatiem ir animētas (Fade-in), radot moderna produkta sajūtu.
+
+12.2. Tehniskā puse (Backend/Engineering)
+    Zem "kapota" darbojas robusts inženiertehnisks risinājums:
+    - **Asinhronā I/O**: Visas datubāzes un failu operācijas notiek atsevišķos pavedienos (JavaFX Task/Service), lai "nesasaldētu" lietotāja saskarni.
+    - **Savienojumu pūls (Connection Pooling)**: HikariCP uztur gatavus DB savienojumus, nodrošinot milisekunžu reakcijas laiku.
+    - **Atkarību injekcija (Dependency Injection)**: Manuāla DI implementācija nodrošina moduļu testējamību un zemu sasaisti (Low Coupling).
+    - **Notikumu kopne (Event Bus)**: Komponentes komunicē caur novērotāja (Observer) paraugu, atjauninot datus reāllaikā visos atvērtajos logos.
+
+======================================================================
+
+13. UZSTĀDĪŠANAS PAMĀCĪBA (DEPLOYMENT GUIDE)
+
+13.1. Vides sagatavošana
+    1. **Java Runtime**: Jābūt uzstādītai JDK 21 vai JRE 21. Pārbaude: `java -version`.
+    2. **Datubāze**: MySQL Server 8.0+. Jāizveido tukša shēma (piem., `socialcare_db`).
+       ```sql
+       CREATE DATABASE socialcare_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+       ```
+
+13.2. Inicializācija
+    - Pirmoreiz palaižot lietotni (`java -jar klientu-registrs.jar`), atvērsies **MySQL konfigurācijas logs**.
+    - Jāievada: Host (localhost), Port (3306), DB Name (socialcare_db), User, Password.
+    - **SchemaManager**: Automātiski izveidos tabulas un ievietos sākuma klasifikatorus, tiklīdz būs veiksmīgs savienojums.
+
+13.3. Konfigurācija
+    - DB pieslēguma dati tiek saglabāti šifrētā veidā lokālajā failu sistēmā (lietotāja profilā).
+    - **Vides mainīgie**:
+      * `app.data.dir`: (Opcija) Norāda mapi, kur glabāt log failus un pagaidu failus. Ja nav norādīts, izmanto programmas mapi.
+
+13.4. Problēmu novēršana (Troubleshooting)
+    **Build process:**
+    Lai izveidotu izpildāmo failu (JAR) ar visām atkarībām:
+    1. Terminālī: `mvn clean package`
+    2. Rezultāts: `target/KlientuAprupesSistema-2.0.0.jar` (izmanto `maven-shade-plugin`).
+
+    **Žurnālfaili (Logs):**
+    - Definēti `logback.xml`.
+    - Atrašanās vieta: `${app.data.dir}/logs/app.log` (noklusējums: `%USERPROFILE%/.klientu_registrs/logs/app.log`).
+    - Kļūdu gadījumā meklēt `ERROR` vai `WARN` līmeņa ierakstus.
+
+13.5. Ieviešanas plāns un apmācības
+    Lai nodrošinātu veiksmīgu sistēmas ieviešanu organizācijā, tiek rekomendēts šāds 5 nedēļu plāns:
+
+    - **1. Nedēļa: Infrastruktūras sagatavošana**
+      * Servera uzstādīšana un MySQL konfigurācija.
+      * Tīkla piekļuves (Firewall) konfigurēšana.
+      * Programmatūras instalēšana uz klientu datoriem.
+
+    - **2. Nedēļa: Datu migrācija**
+      * Esošo datu (Excel, papīra reģistri) analīze un tīrīšana.
+      * Datu imports, izmantojot `AdminService` importa rīkus.
+      * Datu validācija un integritātes pārbaude.
+
+    - **3. Nedēļa: Administratoru apmācība**
+      * Lietotāju un tiesību pārvaldība.
+      * Konfigurācijas pielāgošana (klasifikatori, iestatījumi).
+      * Rezerves kopiju un atjaunošanas procedūras.
+
+    - **4. Nedēļa: Personāla apmācība**
+      * Apmācības grupās (max 10 cilvēki).
+      * Praktiskie uzdevumi: klienta reģistrācija, plāna izveide, žurnāla aizpildīšana.
+      * Biežāk uzdoto jautājumu (FAQ) sesija.
+
+    - **5. Nedēļa: "Go-Live" un atbalsts**
+      * Sistēmas palaišana produktīvajā režīmā.
+      * Klātienes vai attālināts atbalsts pirmajās dienās.
+      * Pirmās nedēļas audita žurnāla analīze kļūdu identificēšanai.
+
+13.6. Infrastruktūras prasības mērogošanai (50+ lietotāji)
+    Ja sistēmu vienlaicīgi izmantos vairāk nekā 50 lietotāji, servera un tīkla prasības pieaug:
+
+    **Datu bāzes serveris (MySQL):**
+    - **CPU**: Vismaz 4 kodoli (ieteicams 8 kodoli, piem., Intel Xeon vai AMD EPYC).
+    - **RAM**: Vismaz 16 GB (ieteicams 32 GB), lai nodrošinātu `InnoDB Buffer Pool` pietiekamu izmēru datu kešošanai.
+    - **Disks**: NVMe SSD (obligāti) ar RAID 1 vai RAID 10 datu drošībai. Ieteicamais apjoms > 500 GB (atkarīgs no dokumentu apjoma).
+    - **Tīkls**: 1 Gbps vai 10 Gbps Ethernet savienojums ar zemu latentumu (< 1ms iekšējā tīklā).
+
+    **Klienta darbstacija:**
+    - **CPU**: Intel Core i3 / AMD Ryzen 3 (8. paaudze vai jaunāks).
+    - **RAM**: 8 GB (vismaz 4 GB brīvi pieejami lietotnei).
+    - **Ekrāns**: 1920x1080 (Full HD) izšķirtspēja optimālai tabulu un grafiku attēlošanai.
+
+    **Tīkla infrastruktūra:**
+    - Stabila LAN vai VPN (attālinātajam darbam) savienojamība.
+    - Ugunsmūra noteikumi: Atļaut TCP portu 3306 (MySQL) no klientu apakštīkla uz serveri.
+
+13.7. Bezsaistes režīma konfigurācija
+    - Pārliecinieties, ka lietotājam ir rakstīšanas tiesības mapē `.klientu_registrs` (parasti lietotāja mājas mapē).
+    - H2 datubāze tiek izveidota automātiski.
+    - Sinhronizācija notiek automātiski fonā (ik pēc 2-3 sekundēm), tiklīdz atjaunojas savienojums ar MySQL serveri.
+    - Lietotājam nav jāveic manuālas darbības datu nosūtīšanai.
+
+======================================================================
+
+14. DOKUMENTĀCIJAS UN KODA SINHRONIZĀCIJA
+
+Lai nodrošinātu, ka šī tehniskā dokumentācija vienmēr ir aktuāla un atbilst reālajam programmas kodam, projektā ir ieviesti automatizēti "Līguma testi" (Contract Tests).
+
+14.1. Dokumentācijas konsistences testi
+    Fails `DocumentationConsistencyTest.java` veic šādas pārbaudes pie katras būvēšanas (build):
+    - **Klašu eksistence**: Pārbauda, vai visas dokumentācijā minētās Java klases (piem., `KlientsRepository`) eksistē projektā.
+    - **Datu vārdnīcas atbilstība**: Salīdzina 10.2. sadaļas tabulu ar `Klients` klases laukiem.
+    - **Resursu pieejamība**: Pārbauda, vai 5. sadaļā minētie faili (.fxml, .css, .xlsx) fiziski atrodas `src/main/resources`.
+    - **Drošības komponentes**: Garantē, ka 6. sadaļā aprakstītie drošības mehānismi ir implementēti.
+
+14.2. Kļūdu ziņošana
+    Ja dokumentācija neatbilst kodam (piem., pārsaukta klase vai pievienots jauns lauks datubāzē), `mvn test` process apstājas ar kļūdu, norādot precīzu neatbilstības vietu. Tas neļauj "novecojušai" dokumentācijai nonākt produkcijā.

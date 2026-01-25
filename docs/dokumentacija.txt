@@ -1,6 +1,6 @@
 ======================================================================
 
-   PROGRAMMATŪRAS "KLIENTU REĢISTRS" TEHNISKĀ DOKUMENTĀCIJA
+   PROGRAMMATŪRAS "Sociālās aprūpes iestāžu pārvaldības sistēma" TEHNISKĀ DOKUMENTĀCIJA
 
    Versija: 2.1.0
    Autors: Dāvis Strazds
@@ -145,21 +145,12 @@ SATURA RĀDĪTĀJS
 1.5. Bezsaistes (Offline) režīma atbalsts
     Sistēma spēj darboties bez pastāvīga savienojuma ar centrālo MySQL serveri.
     - **H2 Datubāze**: Dati tiek saglabāti lokālā H2 datubāzē (`local_db`), ja nav savienojuma.
-<<<<<<< HEAD
-    - **Store-and-Forward**: `OfflineBufferService` uzkrāj datus un automātiski nosūta tos uz serveri, tiklīdz atjaunojas interneta savienojums.
-    - **Pending Changes**: Lokālajā DB tiek uzturēta `pending_changes` tabula, lai precīzi identificētu bezsaistē mainītos ierakstus.
-    - **Gudra konfliktu risināšana**: 
-        * Prioritāte tiek piešķirta Administratoram un Vadītājam (viņu lokālās izmaiņas pārraksta serveri).
-        * Ja servera dati ir ievērojami jaunāki, tiek atjaunota lokālā versija.
-    - **Pilna sinhronizācija**: Nospiežot "Atjaunot", tiek veikta pilna datu un klasifikatoru ielāde no servera, nodrošinot 1:1 kopiju lokālajā H2 datubāzē.
-=======
-    - **Full Mirror Stratēģija**: Startējoties (ja ir internets), sistēma veic pilnu datu sinhronizāciju no servera uz lokālo DB, nodrošinot, ka lietotājam ir pieejami visi dati (arī citu ievadītie) darbam bezsaistē.
-    - **Store-and-Forward**: `OfflineBufferService` un `SyncService` uzkrāj lokālās izmaiņas tabulā `pending_changes` un automātiski nosūta tās uz serveri, tiklīdz atjaunojas interneta savienojums.
+    - **Smart Sync Stratēģija**: Startējoties (ja ir internets), sistēma veic sākotnējo sinhronizāciju (`performInitialSync`). Darba laikā `HubController` fonā (ik pēc 5s) veic divvirzienu sinhronizāciju.
+    - **Store-and-Forward**: `OfflineBufferService` uzkrāj lokālās izmaiņas tabulā `pending_changes` un automātiski nosūta tās uz serveri, tiklīdz atjaunojas interneta savienojums.
     - **Gudra konfliktu risināšana**: 
         * Prioritāte tiek piešķirta Administratoram un Vadītājam (viņu lokālās izmaiņas pārraksta serveri).
         * Ja servera dati ir ievērojami jaunāki, tiek atjaunota lokālā versija.
         * Konfliktu gadījumā lietotājam tiek piedāvāts dialogs (`ConflictDialogController`) izvēlei.
->>>>>>> 68bc6aa566bd4b49440c50d19d72c3203d4f0810
 
 ======================================================================
 
@@ -242,6 +233,8 @@ SATURA RĀDĪTĀJS
     - `lv.socialcare`: Satur lietotnes ieejas punktus (`Main`, `Launcher`), globālos servisus (`SessionManager`, `SharedDataService`, `LoggingService`, `ExcelManager`) un konfigurācijas klases (`MySQLConfig`).
     - `lv.socialcare.view`: Vispārējie skati, dialogi un utilītklases (`UIUtils`, `ValidationService`, `ResourceLoader`).
     - `lv.socialcare.client`: Klientu sarakstu un reģistra pārvaldība (`ClientRegisterController`, `ClientListViewController`, `HubController`).
+    - `lv.socialcare.core`: Klienta kartes un sistēmas kodola komponenti (`ClientCardContext`, `ClientCardTabManager`, `ClientCardDataOrchestrator`, `ServiceRegistry`).
+    - `lv.socialcare.client.hub`: HubController sadalītie komponenti (HubNavigator, HubTaskManager, HubSyncManager, HubWidgetManager, HubLiveFeedManager, HubLicenseHandler).
     - `lv.socialcare.clientcard`: Klienta kartes specifiskā loģika, sadalīta apakšpakotnēs pa cilnēm (`karte`, `protokols`, `aprupesplans`, `rehabilitacijasplans`, `novertesanakarte`, `nodarbibasvesture`, `sarunasapraksts`, `citainformacija`, `invenmantuakts`, `invennaudasakts`).
     - `lv.socialcare.view`: Satur arī refaktorētos palīgus: `ClientChangeDetector`, `ClientUIMapper`, `ComboBoxHelper`.
     - `lv.socialcare.database`: Datu bāzes savienojumu pārvaldība (`DatabaseConnectionManager`), shēmas migrācija (`SchemaManager`) un visi repozitoriji.
@@ -266,7 +259,11 @@ SATURA RĀDĪTĀJS
 
 3.3. Datu piekļuves slānis (DAO/Repository)
     Visas datubāzes operācijas tiek veiktas caur repozitorijiem, izmantojot `PreparedStatement` lai novērstu SQL injekcijas.
-    - `KlientsRepository`: CRUD operācijas ar tabulu `klients`. Ietver metodes meklēšanai pēc PK, vārda, statusa.
+    - `KlientsRepository`: Realizē "Fasādes" (Facade) projektēšanas paraugu, deleģējot operācijas specializētiem apakšmoduļiem:
+        * `KlientsReadRepository`: Datu lasīšanas un meklēšanas operācijas (CQRS principa ievērošana).
+        * `KlientsWriteRepository`: Datu manipulācijas (CUD) un validācija.
+        * `KlientsImportRepository`: Masveida datu apstrāde un sinhronizācija.
+        * `KlientsLockRepository`: Ierakstu bloķēšanas pārvaldība.
     - `PlanRepository`: Aprūpes un rehabilitācijas plānu datu saglabāšana un ielāde.
     - `ClientCardInfoRepository`: Paplašinātā klienta informācija (sociālā anamnēze, intereses).
     - `NovertesanaRepository`: Novērtēšanas karšu datu saglabāšana un ielāde.
@@ -296,18 +293,17 @@ SATURA RĀDĪTĀJS
     Ja jebkurā solī rodas kļūda -> `connection.rollback()`.
 
     **Database Schema Versioning (Shēmas versiju vadība):**
-    `SchemaManager` klase nodrošina automātisku datubāzes migrāciju.
-    Metode `runSchemaMigrations` izmanto `DatabaseMetaData`, lai pārbaudītu kolonnu eksistenci.
-    - Ja kolonna trūkst (piem., `last_updated`), tā tiek pievienota ar `ALTER TABLE`.
-    - Ja tabula ir lieka (piem., `social_anamnesis`), tā tiek dzēsta.
-    Tas nodrošina, ka lietotne var darboties ar vecāku DB versiju, to automātiski atjauninot.
-    - `SchemaManager` arī inicializē noklusējuma datus klasifikatoros (piem., aprūpes līmeņi, dokumentu tipi).
+    `SchemaManager` klase nodrošina automātisku datubāzes migrāciju un versiju kontroli.
+    - **Versiju kontrole**: Tabulā `configuration` tiek glabāta atslēga `db_version` (pašlaik v5).
+    - **Migrācijas stratēģija**: Startējoties sistēma pārbauda versiju un secīgi izpilda migrācijas skriptus.
+    - **Struktūras validācija**: Papildus versijām, `runSchemaMigrations` izmanto `DatabaseMetaData`, lai pārbaudītu un pievienotu trūkstošās kolonnas (piem., `last_updated`, `is_deleted`) vai dzēstu vecās tabulas (`social_anamnesis`), nodrošinot "pašārstēšanos".
+    - **Klasifikatori**: `populateDefaultData` metode garantē, ka visi nepieciešamie klasifikatori (aprūpes līmeņi, diagnozes) ir aizpildīti.
 
 3.4. Kontrolieri un prezentācijas slānis
     Kontrolieri savieno FXML skatus ar biznesa loģiku.
     - `WelcomeController`: Sākuma ekrāns ar animācijām.
-    - `HubController` (lv.socialcare.client): Centralizētais sistēmas vadības panelis (Dashboard). Nodrošina moduļu navigācijas maršrutēšanu, KPI (Key Performance Indicators) vizualizāciju un reāllaika notikumu plūsmas (Live Feed) agregāciju.
-    - `ClientCardController`: Kompozīta skata kontrolieris, kas realizē "Master-Detail" arhitektūras principu klienta lietas pārvaldībai. Pārvalda `TabPane` konteineru, dinamiski inicializējot apakšmoduļus (Karte, Protokols, Plāni) un nodrošinot konteksta (klienta ID) propagāciju starp tiem.
+    - `HubController` (lv.socialcare.client): Centralizētais sistēmas vadības panelis (Dashboard). Darbojas kā "Fasāde", deleģējot loģiku specializētiem menedžeriem (`HubNavigator`, `HubSyncManager` u.c.) pakotnē `lv.socialcare.client.hub`.
+    - `ClientCardController`: Kompozīta skata kontrolieris, kas realizē "Master-Detail" arhitektūras principu klienta lietas pārvaldībai. Darbojas kā "Fasāde", deleģējot loģiku `ClientCardTabManager` un `ClientCardDataOrchestrator`.
     - `KarteController`: Klienta pamatdatu un sociālās anamnēzes ievade. Izmanto `KarteViewModel` un `KarteValidationService`.
     - `PlanController`: Nodrošina aprūpes un rehabilitācijas plānu dinamisko ģenerēšanu, izmantojot programmatiski veidotas UI komponentes un `PlanItemDialog` interakcijai.
     - `NovertesanaKarteController`: Klienta funkcionālo spēju novērtēšana (Bartela indekss u.c.).
@@ -363,12 +359,8 @@ SATURA RĀDĪTĀJS
 3.7. Datu sinhronizācijas mehānisms
     - **OfflineBufferService**: Uzrauga savienojumu ar centrālo datubāzi.
     - **Lokālā DB**: Ja centrālā DB nav pieejama, `DatabaseConnectionManager` pārslēdzas uz lokālo H2 datubāzi.
-<<<<<<< HEAD
-    - **Sinhronizācija**: Kad savienojums atjaunojas, `syncPendingChanges` metode automātiski sinhronizē datus, izmantojot `pending_changes` tabulu.
+    - **Sinhronizācija**: Kad savienojums atjaunojas, `syncPendingChanges` metode automātiski sinhronizē datus, izmantojot `pending_changes` tabulu. Startējoties notiek `performInitialSync`.
     - **Kešatmiņa**: `updateLocalCache` metode nodrošina, ka lokālā H2 datubāze satur pilnu servera datu kopiju (ieskaitot klasifikatorus), lai novērstu FK kļūdas un tukšus laukus bezsaistē.
-=======
-    - **Sinhronizācija**: Kad savienojums atjaunojas, `syncPendingChanges` metode automātiski sinhronizē datus. Startējoties notiek `performInitialSync` (Full Mirror).
->>>>>>> 68bc6aa566bd4b49440c50d19d72c3203d4f0810
     - **Konflikti**: Tiek risināti automātiski, balstoties uz lietotāja lomu (Admin > User) vai laika zīmogu. Kritiskos gadījumos tiek iesaistīts lietotājs.
     - **Backup Rotācija**: `BackupManager` nodrošina ikdienas rezerves kopiju veidošanu, saglabājot pēdējās 31 dienas failus un dzēšot vecākus.
 
@@ -561,6 +553,11 @@ SATURA RĀDĪTĀJS
     | **Atiestatīt lietotāja paroli**|          +           |           -          |
     | **Sistēmas konfigurācija**    |           +           |           -          |
 
+    **Pagaidu lomas (Temporary Roles):**
+    - Administratoram ir iespēja piešķirt lietotājam paaugstinātas tiesības uz noteiktu laiku (piem., 30 minūtēm).
+    - Mehānisms: DB kolonnas `temp_role` un `temp_role_expires` tabulā `users`.
+    - Pielietojums: Ļauj sociālajam darbiniekam veikt specifiskas korekcijas vai piekļūt admin rīkiem vadītāja uzraudzībā.
+
 6.6. Sesiju pārvaldība un "Atcerēties mani" funkcionalitāte
     - **Darbības princips**: Izmantojot "Atcerēties mani", tiek ģenerēts unikāls, kriptogrāfiski drošs žetons (Token), kas tiek saglabāts lietotāja datorā (Java Preferences API) un datubāzē (`user_sessions`).
     - **Drošība**: Parole nekad netiek glabāta lokāli. Žetons ir vienreizējs un piesaistīts konkrētam datoram.
@@ -583,10 +580,12 @@ SATURA RĀDĪTĀJS
     - **Dashboard**: Informācijas panelis, kas agregē kritiskos sistēmas rādītājus dinamiskās kartītēs:
         * **Statistika**: Kopējais klientu skaits, šomēnes uzņemtie un šomēnes aizgājušie klienti.
         * **Termiņu kontrole**: Brīdinājumi par dokumentiem, kam beidzies vai tuvojas termiņš.
-        * **Izvērtēšana**: Atgādinājumi par klientiem, kam nepieciešama periodiskā novērtēšana.
+        * **Izvērtēšana**: Atgādinājumi par klientiem, kam nepieciešama periodiskā novērtēšana (Adaptācija - 30 dienas, Ikgadējā - 12 mēneši).
+        * **Statuss**: Vizuāls indikators (Zaļš/Sarkans/Oranžs) ar rīka padomu par savienojuma stāvokli un sinhronizāciju.
     - **Sidebar**: Hierarhiska navigācijas izvēlne, kas grupēta pēc funkcionālajiem domēniem.
     - **Interaktivitāte (Drill-down)**: Klikšķinot uz kopsavilkuma kartītēm ("Jauni", "Aktuālie", "Aizgājuši"), tiek atvērts filtrēts saraksts.
     - **Live Feed**: Notikumu plūsmas komponente, kas attēlo sistēmas aktivitātes hronoloģiskā secībā.
+        * **Veiktspējas režīms**: Iespēja atslēgt animāciju ar labo peles klikšķi ("Apturēt animāciju"), lai taupītu resursus uz vecākiem datoriem.
     - **Dzimšanas dienas**: Panelis ar tuvākajām klientu dzimšanas dienām.
 
     **Novērtēšanas karte (NovertesanaKarteView):**
@@ -622,6 +621,10 @@ SATURA RĀDĪTĀJS
     | **Speciālistu noslodze** (`SpecialistActivityReport`) | Uzskaita katra darbinieka novadīto nodarbību skaitu un ilgumu. | Personāla darba izpildes novērtēšana (KPI). | Sabalansēt darba slodzi starp speciālistiem. | Salīdzinošā stabiņu diagramma. |
     | **Aktivitāšu dinamika** (`ActivityDynamicsReport`) | Attēlo nodarbību apmeklējuma tendences laika gaitā. | Identificēt sezonalitāti vai izmaiņas klientu aktivitātē. | Plānot nodarbību grafiku nākotnei. | Līniju diagramma (LineChart). |
     | **Kopsavilkums** (`SummaryReport`) | Vispārējs pārskats par klientu statusiem (Aktuālie/Bijušie). | Ātrs ieskats kopējā situācijā. | Vadības informēšana. | Sektoru diagramma (PieChart). |
+    | **Vadības panelis** (`StatisticsCenter`) | KPI kopsavilkums (Aktīvie, Dinamika, Vecums, Aktivitātes). | Sniegt ātru pārskatu par iestādes stāvokli. | Operatīvā lēmumu pieņemšana. | KPI kartītes ar tendencēm (▲/▼). |
+    | **Medicīnas analīze** (`MedicalAnalysisCenter`) | Agregē datus par diagnozēm un medikamentiem. | Identificēt prevalējošās slimības un zāļu patēriņu. | Pielāgot medicīnas personāla kompetences. | TOP 5 Diagnozes/Medikamenti (PieChart). |
+    | **Nodarbību analīze** (`ActivityAnalysisCenter`) | Padziļināta aktivitāšu analīze (iesaiste, ilgums, daudzveidība). | Novērtēt rehabilitācijas efektivitāti. | Uzlabot pakalpojumu kvalitāti. | KPI rādītāji un detalizētas tabulas. |
+    | **Individuālā statistika** (`NodarbibasStatistics`) | Analizē konkrēta klienta vai darbinieka rādītājus. | Monitorēt individuālo plānu izpildi. | Sagatavot atskaites par konkrētu personu. | Tabulas un diagrammas. |
 
 7.4. Specializētie moduļi
     - **Nodarbību reģistrācija (`NodarbibasView`)**: Ļauj reģistrēt nodarbības, izvēloties no hierarhiska klasifikatora. Automātiski aizpilda mērķus un uzdevumus.
@@ -686,6 +689,7 @@ SATURA RĀDĪTĀJS
         * `ClientCardServiceTest`: Pārbauda servisa slāņa loģiku datu apvienošanai un saglabāšanai.
         * `KarteDuplicateDetectionServiceTest`: Pārbauda dublikātu noteikšanas loģiku.
         * `KarteValidationServiceTest`: Pārbauda ievades lauku validācijas noteikumus (Regex).
+        * `ClientCardDataOrchestratorTest`: Pārbauda datu ielādes un bloķēšanas koordināciju klienta kartē.
         * `RecordLockingServiceTest`: Pārbauda ierakstu bloķēšanas mehānismu (Concurrency).
         * `ActivityRepositoryTest`: Pārbauda aktivitāšu žurnāla loģiku (t.sk. "Soft Delete").
         * `ClientChangeDetectorTest`: Pārbauda izmaiņu noteikšanas loģiku klienta datu rediģēšanā.
@@ -696,6 +700,10 @@ SATURA RĀDĪTĀJS
         * `KlientsRepositoryOfflineTest`: Pārbauda KlientsRepository uzvedību tīkla kļūdu gadījumā (Offline režīms).
         * `ListRepositoryOfflineTest`: Pārbauda ListRepository uzvedību tīkla kļūdu gadījumā (Offline režīms).
         * `MedRequestRepositoryOfflineTest`: Pārbauda MedRequestRepository uzvedību tīkla kļūdu gadījumā.
+        * `ScenariosSimulationTest`: Simulē dažādus lietošanas scenārijus (konflikti, bezsaiste, bloķēšana).
+        * `ClientRegisterControllerTest`: Pārbauda klienta reģistrācijas un dzēšanas loģiku.
+        * `HubControllerTest`: Pārbauda galvenā paneļa datu atjaunošanas loģiku.
+        * `NetworkResilienceStressTest`: Pārbauda sistēmas noturību pret tīkla kļūdām.
     - **Datu Bāzes un Integrācijas testi:**
         * `KlientsRepositoryIntegrationTest`: Integrācijas tests ar H2 datubāzi (CRUD operācijas).
         * `DataIntegrityTest`: Pārbauda datu integritāti un kaskādes dzēšanu.
@@ -710,6 +718,7 @@ SATURA RĀDĪTĀJS
         * `SystemPerformanceTest`: Mēra sistēmas ātrdarbību ar lielu datu apjomu (1000+ ieraksti).
         * `SystemStressTest`: Pārbauda sistēmas stabilitāti pie vienlaicīgas piekļuves (Concurrency).
         * `RaceConditionTest`: Pārbauda datu konsistenci, kad vairāki pavedieni mēģina mainīt vienu ierakstu.
+        * `PerformanceStressTest`: Pārbauda datubāzes savienojumu pūla noturību zem slodzes.
         * `ChaosMonkeyTest`: "Haosa inženierija" - ievada nekorektus datus, lai pārbaudītu kļūdu apstrādi.
         * `ConcurrentDataAccessStressTest`: Stresa tests vienlaicīgai datu piekļuvei un modificēšanai.
         * `LargeScaleDataPerformanceTest`: Veiktspējas tests ar lielu datu apjomu (50k+ ieraksti).
@@ -723,6 +732,7 @@ SATURA RĀDĪTĀJS
         * `DocumentationConsistencyTest`: Pārbauda, vai kods atbilst dokumentācijai (klases, DB shēma).
         * `DeepDocumentationAuditTest`: Veic padziļinātu auditu (failu eksistence, atslēgvārdi, testu pārklājums).
         * `ExcelFunctionalityTest`: Pārbauda Excel eksporta un satura validāciju.
+        * `SaveTaskHelperUsageTest`: Statiskā koda analīze - pārbauda, vai kontrolieri izmanto asinhrono saglabāšanu (`SaveTaskHelper`).
 
 9.3. Manuālās testēšanas scenāriji
     Kritiskās funkcijas, kas jāpārbauda manuāli pirms katras relīzes:
@@ -789,6 +799,28 @@ SATURA RĀDĪTĀJS
     | `period_index` | INT | Aprēķināts | Perioda kārtas numurs (P1, P2...). | - |
     | `total_periods` | INT | Aprēķināts | Kopējais periodu skaits klientam. | - |
 
+    Tabula: `client_card_info` (Paplašinātā informācija)
+    
+    | Kolonna | Tips | Apraksts |
+    |---------|------|----------|
+    | `client_id` | INT (PK, FK) | Atsauce uz `klienti`. |
+    | `ricibas_spejas_ierobezotas` | TEXT | Rīcībspējas statuss. |
+    | `tautiba` | VARCHAR | Tautība. |
+    | `gimenes_stavoklis_id` | INT (FK) | Ģimenes stāvoklis. |
+    | `attiecibas_gimene_id` | INT (FK) | Attiecību raksturojums. |
+    | `parvietosanas_id` | INT (FK) | Pārvietošanās spējas. |
+    | `izglitiba` | TEXT | Iegūtā izglītība. |
+    | `darba_pieredze` | TEXT | Iepriekšējā nodarbošanās. |
+    | `religiska_piederiba` | TEXT | Konfesija. |
+    | `ediens` | TEXT | Ēšanas paradumi/diēta. |
+    | `meitas_skaits` | VARCHAR | Meitu skaits. |
+    | `deli_skaits` | VARCHAR | Dēlu skaits. |
+    | `doc_cits` | TEXT | Citi dokumenti. |
+    | `teh_cits` | TEXT | Citi tehniskie palīglīdzekļi. |
+    | `int_cits` | TEXT | Citas intereses. |
+    | `karti_aizpildija_...` | VARCHAR | Darbinieka paraksts. |
+    | `last_updated` | DATETIME | Pēdējās izmaiņas. |
+
 10.3. Algoritmiskā sarežģītība
     Kritisko komponentu veiktspējas analīze (Big O notation):
     
@@ -837,6 +869,8 @@ SATURA RĀDĪTĀJS
     | FK    gimenes_stavoklis_id  |                 |    name          |
     | FK    attiecibas_gimene_id  |                 |    relationship  |
     | FK    parvietosanas_id      |                 |    contact_info  |
+    |       meitas/deli_skaits    |                 +------------------+
+    |       doc/teh/int_cits      |
     +-------------+---------------+                 +------------------+
                   |
                   | M:N (Caur saisttabulām)
@@ -1105,7 +1139,7 @@ SATURA RĀDĪTĀJS
 13.7. Bezsaistes režīma konfigurācija
     - Pārliecinieties, ka lietotājam ir rakstīšanas tiesības mapē `.klientu_registrs` (parasti lietotāja mājas mapē).
     - H2 datubāze tiek izveidota automātiski.
-    - Sinhronizācija notiek automātiski fonā (ik pēc 2-3 sekundēm), tiklīdz atjaunojas savienojums ar MySQL serveri.
+    - Sinhronizācija notiek automātiski fonā (ik pēc 5 sekundēm), izmantojot `scheduleWithFixedDelay` lai saudzētu resursus.
     - Lietotājam nav jāveic manuālas darbības datu nosūtīšanai.
 
 ======================================================================

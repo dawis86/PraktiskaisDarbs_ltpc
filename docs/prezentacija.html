@@ -7,8 +7,8 @@
     <style>
         :root {
             --primary: #2c3e50;
-            --accent: #3498db;
-            --secondary: #2980b9;
+            --accent: #2980b9; /* Tumšāks tonis labākam kontrastam */
+            --secondary: #34495e;
             --text: #333;
             --bg: #f4f4f4;
             --slide-bg: #ffffff;
@@ -20,12 +20,13 @@
             padding: 0;
             background-color: var(--bg);
             color: var(--text);
-            overflow: hidden;
+            overflow: hidden; /* Novērš dubulto scroll */
             height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
+        /* --- Controls & Progress --- */
         .controls {
             position: fixed;
             bottom: 20px;
@@ -39,20 +40,37 @@
             background-color: var(--primary);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             cursor: pointer;
             border-radius: 5px;
             font-size: 16px;
-            transition: background 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         button:hover {
             background-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        /* Pulsācijas efekts pogai "Tālāk" pēdējā slaidā vai lai pievērstu uzmanību */
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(41, 128, 185, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(41, 128, 185, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(41, 128, 185, 0); }
+        }
+
+        .next-btn-pulse {
+            animation: pulse 2s infinite;
         }
 
         button:disabled {
             background-color: #ccc;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            animation: none;
         }
 
         .progress-container {
@@ -60,7 +78,7 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 5px;
+            height: 6px;
             background: #ddd;
             z-index: 1000;
         }
@@ -69,14 +87,16 @@
             height: 100%;
             background: var(--accent);
             width: 0%;
-            transition: width 0.3s;
+            transition: width 0.4s ease-in-out;
         }
 
+        /* --- Slides --- */
         .slide-container {
             flex: 1;
             position: relative;
             width: 100%;
             height: 100%;
+            perspective: 1000px;
         }
 
         .slide {
@@ -87,140 +107,257 @@
             height: 100%;
             opacity: 0;
             visibility: hidden;
-            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+            /* Modernāka pāreja: Slide Up + Fade */
+            transform: translateY(30px); 
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                        transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+                        visibility 0.6s;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 40px;
+            padding: 40px 60px 80px 60px; /* Vairāk vietas malās + vieta footerim */
             box-sizing: border-box;
             background-color: var(--slide-bg);
-            overflow-y: auto;
+            overflow-y: auto; /* Ritina tikai saturu, ja vajag */
         }
 
         .slide.active {
             opacity: 1;
             visibility: visible;
+            transform: translateY(0);
             z-index: 1;
         }
 
+        /* --- Typography --- */
         h1 {
             color: var(--primary);
-            font-size: 3em;
+            font-size: 3.2em;
             margin-bottom: 0.2em;
             text-align: center;
+            font-weight: 700;
         }
 
         h2 {
             color: var(--accent);
-            font-size: 2em;
-            margin-bottom: 20px;
-            border-bottom: 2px solid var(--accent);
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--accent);
             padding-bottom: 10px;
             text-align: center;
+            width: fit-content;
         }
 
         h3 {
-            color: var(--primary);
+            color: var(--secondary);
             margin-top: 20px;
+            font-size: 1.5em;
         }
 
         p, li {
-            font-size: 1.2em;
+            font-size: 1.3em;
             line-height: 1.6;
-            max-width: 900px;
-            text-align: justify;
+            max-width: 1000px;
+            text-align: left; /* Uzlabota lasāmība */
+            color: #444;
         }
 
-        ul {
+        ul, ol {
             text-align: left;
-            max-width: 800px;
+            max-width: 900px;
+            margin-bottom: 20px;
+        }
+        
+        li {
+            margin-bottom: 10px;
         }
 
+        /* --- Images & Grid --- */
         .image-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
             width: 100%;
             max-width: 1200px;
-            margin-top: 20px;
-            max-height: 60vh;
-            overflow-y: auto;
-            padding: 10px;
+            margin-top: 25px;
+            justify-content: center;
         }
 
         .image-item {
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            border: 1px solid #eee;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
             background: white;
+            position: relative;
+            cursor: zoom-in; /* Norāde lietotājam */
         }
 
         .image-item:hover {
-            transform: scale(1.02);
-            z-index: 10;
+            transform: scale(1.03);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            z-index: 5;
         }
 
         .image-item img {
             width: 100%;
-            height: auto;
+            height: auto; 
+            max-height: 300px;
+            object-fit: contain; /* Svarīgi: nerāda apgrieztas bildes */
+            object-position: top;
             display: block;
-            cursor: pointer;
+        }
+        
+        /* Zoom ikona */
+        .image-item::after {
+            content: '🔍';
+            position: absolute;
+            bottom: 35px;
+            right: 10px;
+            background: rgba(255,255,255,0.8);
+            padding: 5px;
+            border-radius: 50%;
+            font-size: 14px;
+            pointer-events: none;
         }
 
         .image-caption {
-            padding: 8px;
-            font-size: 0.9em;
+            padding: 10px;
+            font-size: 1em;
             text-align: center;
-            background: #f9f9f9;
-            color: #555;
-            font-weight: bold;
+            background: #f8f9fa;
+            color: var(--primary);
+            font-weight: 600;
+            border-top: 1px solid #eee;
         }
 
+        /* --- Footer --- */
         .footer-info {
             position: fixed;
             bottom: 20px;
             left: 20px;
-            font-size: 0.9em;
+            font-size: 1em;
             color: #777;
-            z-index: 1000;
+            z-index: 1900;
+            background: #ffffff;
+            padding: 8px 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1px solid #eee;
+            border-radius: 5px;
         }
 
+        /* --- Modal --- */
         .modal {
             display: none;
             position: fixed;
             z-index: 2000;
-            padding-top: 50px;
+            padding-top: 30px;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.9);
+            overflow: hidden;
+            background-color: rgba(0,0,0,0.92);
+            backdrop-filter: blur(5px);
         }
 
         .modal-content {
             margin: auto;
             display: block;
-            max-width: 90%;
-            max-height: 90%;
+            max-width: 95%;
+            max-height: 85vh;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
         }
 
         .close {
             position: absolute;
-            top: 15px;
-            right: 35px;
+            top: 20px;
+            right: 30px;
             color: #f1f1f1;
             font-size: 40px;
             font-weight: bold;
             cursor: pointer;
+            transition: color 0.2s;
         }
+        
+        .close:hover { color: var(--accent); }
 
+        .modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 20px;
+            user-select: none;
+            transition: 0.3s;
+        }
+        .modal-nav:hover { color: var(--accent); background: rgba(255,255,255,0.1); }
+        .prev-img { left: 20px; }
+        .next-img { right: 20px; }
+
+        /* --- Specific Slide Styles --- */
         .title-slide {
             text-align: center;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            /* Nodrošinām, ka saturs ir centrēts */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- Hero Section Styles (Titullapa) --- */
+        .hero-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1300px;
+            gap: 50px;
+            text-align: left; /* Pārrakstām slide default center */
+        }
+        
+        .hero-text {
+            flex: 1;
+            animation: slideInLeft 1s ease-out;
+        }
+        
+        .hero-text h1 {
+            text-align: left; /* Svarīgi */
+            font-size: 3.5em;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-image-container {
+            flex: 1.3;
+            perspective: 1500px;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        .hero-img-3d {
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: -30px 30px 60px rgba(0,0,0,0.25);
+            transform: rotateY(-12deg) rotateX(5deg);
+            transition: transform 0.5s ease;
+        }
+
+        .hero-img-3d:hover {
+            transform: rotateY(0deg) rotateX(0deg) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+
+        @keyframes slideInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
         }
         
         .team-grid {
@@ -232,30 +369,431 @@
             margin-top: 20px;
         }
         .team-member {
-            background: #f9f9f9;
+            background: #fff;
             border-left: 5px solid var(--accent);
-            padding: 20px;
+            padding: 25px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             transition: all 0.3s ease;
         }
         .team-member:hover {
             transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
-        .team-member h3 {
-            margin-top: 0;
-            color: var(--primary);
-            font-size: 1.4em;
+        
+        /* Tech Badges */
+        .tech-badge {
+            display: inline-block;
+            padding: 15px 25px;
+            margin: 10px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
         }
-        .team-member p {
-            font-size: 1em;
+        .java-badge { background: linear-gradient(45deg, #e76f00, #5382a1); }
+        .mysql-badge { background: linear-gradient(45deg, #00758f, #f29111); }
+        .javafx-badge { background: linear-gradient(45deg, #2c3e50, #34495e); }
+
+        /* Algorithm Flowchart */
+        .algo-step {
+            background: white;
+            border: 2px solid var(--accent);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            position: relative;
+            width: 600px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .algo-step::after {
+            content: '↓';
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 20px;
+            color: var(--accent);
+        }
+        .algo-step:last-child::after { content: none; }
+
+        /* --- NEW: INTERACTIVE DEMO STYLES --- */
+
+        /* 1. Before/After Slider */
+        .comparison-container {
+            position: relative;
+            width: 800px;
+            height: 450px;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-top: 20px;
+        }
+        .comp-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Šeit cover ir ok efektam */
+            object-position: top left;
+        }
+        .comp-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%; /* Start position */
+            height: 100%;
+            overflow: hidden;
+            border-right: 4px solid var(--accent);
+            background: white;
+            transition: width 0.1s;
+        }
+        .comp-label {
+            position: absolute;
+            top: 20px;
+            padding: 5px 15px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            font-weight: bold;
+            border-radius: 4px;
+            z-index: 10;
+        }
+        .label-left { left: 20px; }
+        .label-right { right: 20px; }
+        .slider-handle {
+            position: absolute;
+            top: 50%;
+            right: -20px;
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: ew-resize;
+            transform: translateY(-50%);
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        /* 2. Spotlight Demo */
+        .spotlight-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-top: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .spotlight-img {
+            display: block;
+            max-width: 900px;
+            height: auto;
+        }
+        .hotspot {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: rgba(231, 76, 60, 0.9);
+            border: 2px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+            animation: pulse-red 2s infinite;
+            z-index: 10;
+            transition: transform 0.2s;
+        }
+        .hotspot:hover { transform: scale(1.2); }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(231, 76, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+        .spotlight-info {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(44, 62, 80, 0.95);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 30px;
+            font-size: 1.1em;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .spotlight-info.visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-10px);
+        }
+
+        /* 3. Step-by-Step Walkthrough */
+        .walkthrough-container {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            max-width: 1100px;
+            margin-top: 20px;
+        }
+        .walkthrough-visual {
+            flex: 1.5;
+            position: relative;
+        }
+        .walkthrough-visual img, .walkthrough-visual .spotlight-img {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .walkthrough-step-content {
+            display: none;
+        }
+        .walkthrough-step-content.active-step {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        .walkthrough-controls {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .step-btn {
             text-align: left;
-            line-height: 1.5;
+            background: white;
+            color: var(--primary);
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
         }
-        .team-member strong {
-            color: var(--secondary);
+        .step-btn:hover { background: #f8f9fa; transform: translateX(5px); }
+        .step-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(44, 62, 80, 0.3);
         }
+        .step-btn.active::after {
+            content: '👉';
+            position: absolute;
+            right: 15px;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- 4. App Simulator (Slide 12) --- */
+        .app-simulator {
+            display: flex;
+            width: 100%;
+            max-width: 1100px;
+            height: 550px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+            overflow: hidden;
+            border: 1px solid #ddd;
+            margin-top: 20px;
+        }
+        .app-sidebar {
+            width: 280px;
+            background: #2c3e50;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .app-sidebar-header {
+            padding: 20px;
+            background: #1a252f;
+            font-weight: bold;
+            border-bottom: 1px solid #34495e;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .app-tab-btn {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #34495e;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95em;
+        }
+        .app-tab-btn:hover { background: #34495e; padding-left: 25px; }
+        .app-tab-btn.active { background: var(--accent); border-left: 6px solid #fff; }
+        .app-content {
+            flex: 1;
+            background: #ecf0f1;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .app-screen-img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 4px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            display: none;
+            animation: zoomIn 0.3s ease-out;
+            cursor: zoom-in;
+        }
+        .app-screen-img.active { display: block; }
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+        /* --- 5. Activity Browser (Slide 13) --- */
+        .activity-browser {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1000px;
+            height: 550px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        .ab-view-area {
+            flex: 1;
+            position: relative;
+            background: #f0f2f5;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ab-image {
+            max-width: 95%;
+            max-height: 95%;
+            border-radius: 6px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+            position: absolute;
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            pointer-events: none;
+        }
+        .ab-image.active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+            cursor: zoom-in;
+        }
+        .ab-nav {
+            display: flex;
+            height: 90px;
+            background: white;
+            border-top: 1px solid #eee;
+        }
+        .ab-nav-item {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 4px solid transparent;
+            color: #7f8c8d;
+        }
+        .ab-nav-item:hover {
+            background: #f8f9fa;
+            color: var(--primary);
+        }
+        .ab-nav-item.active {
+            background: #fdfdfd;
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+        .ab-icon-box {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #ecf0f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4em;
+            transition: all 0.3s;
+        }
+        .ab-nav-item.active .ab-icon-box {
+            background: var(--accent);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 4px 10px rgba(41, 128, 185, 0.3);
+        }
+        .ab-text-box {
+            display: flex;
+            flex-direction: column;
+        }
+        .ab-title { font-weight: bold; font-size: 1.1em; }
+        .ab-desc { font-size: 0.85em; opacity: 0.7; }
+
+        /* --- 6. Admin Panel (Slide 16) --- */
+        .admin-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 50px;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+        .admin-image-wrapper {
+            flex: 1;
+            position: relative;
+            perspective: 1000px;
+        }
+        .admin-img {
+            width: 100%;
+            max-height: 50vh; /* Ierobežots augstums, lai neietu virsū footerim */
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            transform: rotateY(5deg);
+            transition: transform 0.5s ease;
+            cursor: zoom-in;
+        }
+        .admin-image-wrapper:hover .admin-img {
+            transform: rotateY(0deg) scale(1.02);
+        }
+        .admin-features {
+            flex: 0.8;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .admin-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid #ddd;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+        .admin-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .admin-card.security { border-left-color: #e74c3c; }
+        .admin-card.data { border-left-color: #3498db; }
+        .admin-card.system { border-left-color: #f1c40f; }
+        
+        .ac-icon { font-size: 1.5em; margin-bottom: 10px; display: block; }
+        .ac-title { font-weight: bold; font-size: 1.1em; color: #2c3e50; margin-bottom: 5px; }
+        .ac-desc { font-size: 0.9em; color: #7f8c8d; line-height: 1.4; }
 
     </style>
 </head>
@@ -267,223 +805,517 @@
 
     <div class="slide-container">
 
-        <!-- SLIDE 1: Title -->
+        <!-- 1. Titullapa (Uzlabota) -->
         <div class="slide active title-slide">
-            <h1>Sociālās aprūpes iestāžu pārvaldības sistēma</h1>
-            <h2>"Klientu Reģistrs"</h2>
-            <p style="font-size: 1.4em; text-align: center;">Mācību priekšmets: <strong>EIKT produktu izstrāde</strong> | LTPTC 2026</p>
-            <div style="margin-top: 30px;">
-                <img src="../prototips/KlientuRegistrs.png" alt="Logo" style="max-width: 150px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);">
+            <div class="hero-container">
+                <div class="hero-text">
+                    <div style="text-transform: uppercase; letter-spacing: 2px; color: var(--accent); font-weight: bold; margin-bottom: 15px;">EIKT Produktu Izstrāde</div>
+                    <h1>Sociālās aprūpes iestāžu pārvaldības sistēma</h1>
+                    <p style="font-size: 1.5em; color: #555; margin-bottom: 30px; line-height: 1.4;">
+                        Tehnoloģija, kas samazina birokrātiju un atgriež uzmanību cilvēkam.
+                    </p>
+                    <div style="display: flex; gap: 20px; font-size: 1.1em; color: #777; border-top: 1px solid #ccc; padding-top: 20px;">
+                        <div><strong>LTPTC 2026</strong></div>
+                        <div style="border-left: 2px solid #ccc; padding-left: 20px;">Komanda: Dāvis, Zane, Aleksandrs, Sabīne</div>
+                    </div>
+                </div>
+                <div class="hero-image-container">
+                    <img src="../prototips/Galvenais_skats.png" alt="Sistēmas panelis" class="hero-img-3d">
+                </div>
             </div>
         </div>
 
-        <!-- SLIDE 2: The Team -->
+        <!-- 2. Komandas lomas -->
         <div class="slide">
-            <h2>Iepazīstieties ar komandu!</h2>
-            <p style="text-align: center; max-width: 800px;">Katrs liels projekts ir komandas darbs. Mēs apvienojām savas stiprās puses, lai radītu risinājumu, kas patiesi palīdz.</p>
+            <h2>Komanda un Atbildības</h2>
             <div class="team-grid">
                 <div class="team-member">
                     <h3>Dāvis</h3>
-                    <p><strong>Loma:</strong> Projekta Vadītājs & Arhitekts</p>
-                    <p>Dāvis bija mūsu komandas "līme" – viņš koordinēja darbus, pārvaldīja GitHub un lika tehniskos pamatus, lai mums visiem būtu stabila bāze, uz kuras strādāt.</p>
+                    <p><strong>Projekta Vadītājs & Arhitekts</strong></p>
+                    <p>Dāvis, pieredzējis sociālās jomas speciālists ar vairāk nekā 13 gadu pieredzi, vadīja projektu kā daļu no kopīga komandas darba. Viņš koordinēja uzdevumus, pārvaldīja GitHub un kopā ar komandu veidoja stabilu tehnisko pamatu, kas ļāva visiem efektīvi strādāt un sasniegt rezultātus.</p>
                 </div>
                 <div class="team-member">
                     <h3>Zane</h3>
-                    <p><strong>Loma:</strong> Biznesa Analītiķe</p>
-                    <p>Zane iedziļinājās problēmas saknē. Viņa pētīja tirgu, analizēja mērķauditorijas sāpes un definēja, kāpēc mūsu risinājums ir tik ļoti nepieciešams sociālās aprūpes centriem.</p>
+                    <p><strong>Biznesa Analītiķe</strong></p>
+                    <p>Zane iedziļinājās problēmas saknē, pētot tirgu un analizējot mērķauditorijas izaicinājumus. Viņas darbs palīdzēja komandai skaidri saprast, kāpēc mūsu risinājums ir būtisks un kādu reālu vērtību tas sniedz sociālās aprūpes centriem.</p>
                 </div>
                 <div class="team-member">
                     <h3>Aleksandrs</h3>
-                    <p><strong>Loma:</strong> Sistēmu Analītiķis</p>
-                    <p>Aleksandrs pārvērta Zanes analīzi tehniskā valodā. Viņš izvēlējās pareizos rīkus (Java, MySQL) un aprakstīja sistēmas "smadzenes" – algoritmus un loģiku, kas to visu darbina.</p>
+                    <p><strong>Sistēmu Analītiķis</strong></p>
+                    <p>Balstoties uz Zanes analīzi, Aleksandrs to pārtulkoja tehniskā valodā. Viņš izvēlējās piemērotākās tehnoloģijas (Java, MySQL) un kopā ar komandu veidoja sistēmas loģiku un algoritmus, kas ir risinājuma pamatā.</p>
                 </div>
                 <div class="team-member">
                     <h3>Sabīne</h3>
-                    <p><strong>Loma:</strong> UI/UX Dizainere & QA</p>
-                    <p>Sabīne iedeva projektam seju. Viņa izveidoja vizuālo prototipu, aprakstīja lietotāja ceļu un rūpējās, lai gala rezultāts būtu ne tikai funkcionāls, bet arī skaists un ērts lietošanā.</p>
+                    <p><strong>UI/UX Dizainere</strong></p>
+                    <p>Sabīne veidoja projekta vizuālo identitāti un lietotāja pieredzi — izstrādāja prototipu, strukturēja lietotāja ceļu un palīdzēja nodrošināt, lai gala risinājums būtu saprotams, ērts lietošanā un estētiski pievilcīgs.</p>
                 </div>
             </div>
         </div>
 
-        <!-- SLIDE 3: The Problem (Zane's part) -->
-        <div class="slide">
-            <h2>Problēma: Papīra kalni un zudis laiks</h2>
-            <p>Zanes veiktā izpēte atklāja skaudru ainu sociālās aprūpes centros (SAC):</p>
-            <ul>
-                <li>Milzīgs administratīvais slogs – darbinieki pavada stundas, aizpildot papīra veidlapas.</li>
-                <li>Sadrumstalota informācija – dati glabājas Excel failos, mapītēs un seifos, tos ir grūti atrast.</li>
-                <li>Augsts kļūdu risks – manuāla datu pārrakstīšana noved pie neprecizitātēm.</li>
-                <li>Drošības riski – sensitīvi dati var pazust, tikt bojāti vai nonākt nepareizajās rokās.</li>
-            </ul>
-            <p>Rezultātā laiks, ko varētu veltīt tiešam darbam ar klientiem, tiek iztērēts birokrātijai.</p>
+        <!-- 3. Citāts (Dāvis) -->
+        <div class="slide" style="background: #2c3e50; color: #ecf0f1;">
+            <div style="border-left: 10px solid var(--accent); padding-left: 40px; max-width: 1200px;">
+                <p style="font-size: 2.8em; font-weight: bold; line-height: 1.3; font-style: italic; color: #fff; text-align: left;">
+                    "Klients nav pirmajā vietā, pirmajā vietā ir dokuments, kurš pasaka, ka klients ir pirmajā vietā"
+                </p>
+                <p style="font-size: 1.8em; margin-top: 30px; color: var(--accent); text-align: right;">— Dāvis Strazds</p>
+                <p style="font-size: 1.2em; color: #bdc3c7; text-align: right;">(13+ gadu pieredze sociālajā jomā)</p>
+            </div>
         </div>
 
-        <!-- SLIDE 4: Our Solution -->
+        <!-- 4. Situācija nozarē -->
+        <div class="slide">
+            <h2>Situācija nozarē: "Papīra kalni"</h2>
+            <p style="text-align: center; margin-bottom: 10px;">Transformācija no haosa uz kārtību.</p>
+            
+            <!-- Interactive Comparison Slider -->
+            <div class="comparison-container" onmousemove="moveSlider(event)">
+                <!-- Right Image (After) -->
+                <img src="../prototips/Jauns_klients.png" class="comp-img">
+                <div class="comp-label label-right">PĒC: Sistēma</div>
+                
+                <!-- Left Image (Before) - Simulated Paper Mess -->
+                <div class="comp-overlay" id="compOverlay">
+                    <div style="width: 800px; height: 450px; background: #fdfbf7; padding: 40px; box-sizing: border-box; font-family: 'Courier New', monospace; color: #555; position: relative;">
+                        <h3 style="color: #333; border-bottom: 2px solid #333;">KLIENTA KARTE (ARHĪVS)</h3>
+                        <p>Vārds: Jānis Bērziņš (Rokraksts nesalasāms)</p>
+                        <p>Kods: 120345-.....</p>
+                        <div style="position: absolute; top: 100px; right: 50px; transform: rotate(-15deg); border: 3px solid red; color: red; padding: 10px; font-weight: bold; font-size: 2em;">NOKAVĒTS</div>
+                        <p style="margin-top: 50px;">Piezīmes: Lapa saplēsta... Dati meklējami 3. mapē...</p>
+                        <div style="width: 100%; height: 2px; background: #999; margin: 20px 0;"></div>
+                        <p>Medikamenti: ????? (Izlijusi kafija)</p>
+                    </div>
+                    <div class="comp-label label-left">PIRMS: Papīrs</div>
+                    <div class="slider-handle">⬌</div>
+                </div>
+            </div>
+            <p style="font-size: 0.9em; color: #777; margin-top: 10px;">Velciet slīdni, lai salīdzinātu</p>
+        </div>
+
+        <!-- 5. Problēmu kopsavilkums -->
+        <div class="slide">
+            <h2>Galvenie "Sāpju punkti"</h2>
+            <div style="display: flex; gap: 40px; align-items: center;">
+                <ul style="font-size: 1.4em;">
+                    <li>❌ <strong>Laika patēriņš:</strong> Darbinieki tērē stundas birokrātijai, nevis klientam.</li>
+                    <li>❌ <strong>Kļūdu risks:</strong> Manuāli aprēķini un pārrakstīšana rada neprecizitātes.</li>
+                    <li>❌ <strong>Datu drošība:</strong> Papīra dokumenti var pazust vai tikt bojāti.</li>
+                    <li>❌ <strong>Sadrumstalotība:</strong> Informācija ir izkaisīta pa dažādiem kabinetiem.</li>
+                    <li>❌ <strong>Caurspīdīguma trūkums:</strong> Grūti izsekot, kurš un kad veicis ierakstus.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 6. Mūsu vīzija (Hero Image) -->
         <div class="slide">
             <h2>Mūsu risinājums: "Klientu Reģistrs"</h2>
-            <p style="text-align: center;">Mēs radījām sistēmu, kas atdod laiku atpakaļ aprūpētājiem. Tā ir centralizēta, droša un intuitīva platforma, kas digitalizē visus ikdienas procesus.</p>
-            <img src="../prototips/Galvenais_skats.png" alt="Galvenais skats" style="max-width: 80%; border-radius: 8px; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-            <p style="font-size: 1em; text-align: center; margin-top: 10px;">Galvenais panelis sniedz tūlītēju pārskatu par svarīgākajiem rādītājiem.</p>
+            <p style="text-align: center; font-size: 1.5em;">Vienota, droša un intuitīva informācijas sistēma.</p>
+            
+            <!-- Spotlight Demo -->
+            <div class="spotlight-wrapper">
+                <img src="../prototips/Galvenais_skats.png" class="spotlight-img">
+                <!-- Hotspots (Coordinates based on image layout) -->
+                <div class="hotspot" style="top: 15%; left: 25%;" onclick="showSpotlightInfo(this, 'KPI Paneļi: Ātrs pārskats par jauniem un aizejošiem klientiem')"></div>
+                <div class="hotspot" style="top: 25%; left: 65%;" onclick="showSpotlightInfo(this, 'Brīdinājumi: Sistēma automātiski ziņo par termiņiem')"></div>
+                <div class="hotspot" style="top: 50%; left: 10%;" onclick="showSpotlightInfo(this, 'Navigācija: Ērta piekļuve visiem moduļiem vienuviet')"></div>
+                <div class="hotspot" style="top: 60%; left: 50%;" onclick="showSpotlightInfo(this, 'Dzimšanas dienas: Atgādinājumi par svētkiem')"></div>
+                <div class="hotspot" style="top: 5%; left: 95%;" onclick="showSpotlightInfo(this, 'Sarkans- esi offline, zaļš esi online')"></div>
+                <div class="hotspot" style="top: 90%; left: 50%;" onclick="showSpotlightInfo(this, 'Dzīvā lente- parāda kurš lietotājs, ko veica')"></div>
+                <div class="spotlight-info">Uzklikšķini uz sarkanajiem punktiem!</div>
+            </div>
+
+            <p style="text-align: center; margin-top: 20px;">Sistēma atdod laiku atpakaļ sociālā darba speciālistam, jo visi rutīnas darbi būs automatizēti.</p>
         </div>
 
-        <!-- SLIDE 5: Technology (Aleksandrs's part) -->
+        <!-- 7. Tehnoloģiskais steks -->
         <div class="slide">
-            <h2>Tehnoloģijas, kas to darbina (Aleksandra izvēle)</h2>
-            <p style="text-align: center;">Lai sistēma būtu stabila un ilgtspējīga, Aleksandrs izvēlējās pārbaudītas un uzticamas tehnoloģijas.</p>
-            <div class="image-grid" style="grid-template-columns: repeat(3, 1fr); max-width: 1000px;">
-                <div class="image-item">
-                    <img src="../prototips/MySQL_savienojuma_iestatijumi.png" onclick="openModal(this)">
-                    <div class="image-caption">Vienkārša DB konfigurācija</div>
-                </div>
-                <div class="image-item">
-                    <img src="../prototips/Savienojuma_parbaude_rezultats_ok.png" onclick="openModal(this)">
-                    <div class="image-caption">Stabils savienojums</div>
-                </div>
-                <div class="image-item">
-                    <img src="../prototips/Savienojums_neizdevas.png" onclick="openModal(this)">
-                    <div class="image-caption">Pārdomāta kļūdu apstrāde</div>
-                </div>
+            <h2>Tehnoloģijas (Aleksandra izvēle)</h2>
+            <p style="text-align: center;">Lai nodrošinātu stabilitāti un drošību, izvēlējāmies pārbaudītas vērtības:</p>
+            
+            <div style="display: flex; justify-content: center; flex-wrap: wrap; margin: 40px 0;">
+                <div class="tech-badge java-badge">☕ Java 21 (LTS)</div>
+                <div class="tech-badge javafx-badge">🖥️ JavaFX 21</div>
+                <div class="tech-badge mysql-badge">🐬 MySQL 8.0</div>
+                <div class="tech-badge" style="background: #444;">🔒 BCrypt</div>
             </div>
-            <ul style="margin-top: 20px;">
-                <li><strong>Valoda:</strong> Java 21 (LTS) – stabilitāte un drošība.</li>
-                <li><strong>UI:</strong> JavaFX 21 – moderna un atsaucīga saskarne.</li>
-                <li><strong>Datu bāze:</strong> MySQL (centrālā) + H2 (darbam bez interneta).</li>
+
+            <ul>
+                <li><strong>Java & JavaFX:</strong> Stabila, platformu neatkarīga darbvirsmas lietotne.</li>
+                <li><strong>MySQL:</strong> Uzticama datubāze liela apjoma datu glabāšanai.</li>
+                <li><strong>H2 Database:</strong> Lokālā datubāze darbam bezsaistes (offline) režīmā.</li>
+                <li><strong>BCrypt:</strong> Industriālais standarts paroļu šifrēšanai.</li>
             </ul>
         </div>
 
-        <!-- SLIDE 6: User Journey (Sabīne's part) -->
+        <!-- 8. Datu drošības pamati -->
         <div class="slide">
-            <h2>Lietotāja ceļš (Sabīnes vīzija)</h2>
-            <p style="text-align: center;">Sabīne izstrādāja loģisku un intuitīvu plūsmu, kas atspoguļo sociālā darbinieka ikdienu:</p>
-            <ol style="font-size: 1.2em; line-height: 1.8;">
-                <li><strong>Droša autorizācija</strong> un piekļuve sistēmai.</li>
-                <li><strong>Galvenā paneļa</strong> izmantošana ikdienas darbībām.</li>
-                <li><strong>Klientu reģistra</strong> pārvaldība un ātra klienta izvēle.</li>
-                <li><strong>Klienta kartes</strong> aizpildīšana un datu uzturēšana.</li>
-                <li><strong>Nodarbību un aktivitāšu</strong> reģistrācija.</li>
-                <li><strong>Medicīnisko procesu</strong> automatizācija.</li>
-                <li><strong>Statistikas</strong> analīze lēmumu pieņemšanai.</li>
-            </ol>
-        </div>
-
-        <!-- SLIDE 7: Prototype - Security -->
-        <div class="slide">
-            <h2>Prototips: Drošība pirmajā vietā</h2>
-            <p style="text-align: center;">Mēs zinām, cik svarīgi ir aizsargāt sensitīvus datus. Tāpēc sistēma ir būvēta ar vairākiem drošības līmeņiem.</p>
-            <div class="image-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
-                <div class="image-item"><img src="../prototips/Autorizacija_Klientu_registrs1.png" onclick="openModal(this)"><div class="image-caption">Pieslēgšanās</div></div>
-                <div class="image-item"><img src="../prototips/Autorizacija_Klientu_registrs2.png" onclick="openModal(this)"><div class="image-caption">Paroles ievade</div></div>
-                <div class="image-item"><img src="../prototips/Autorizacija_Klientu_registrs3_aizmirsa_paroli.png" onclick="openModal(this)"><div class="image-caption">Paroles atjaunošana</div></div>
-                <div class="image-item"><img src="../prototips/Lietotaja_identifikacija.png" onclick="openModal(this)"><div class="image-caption">Lietotāja identifikācija</div></div>
-                <div class="image-item"><img src="../prototips/Administratora_paroles_iestatisana.png" onclick="openModal(this)"><div class="image-caption">Admina rīki</div></div>
-                <div class="image-item"><img src="../prototips/Licences_ipasnieks.png" onclick="openModal(this)"><div class="image-caption">Licences pārvaldība</div></div>
-                <div class="image-item"><img src="../prototips/Programmas_aizsardziba.png" onclick="openModal(this)"><div class="image-caption">Programmas aizsardzība</div></div>
-                <div class="image-item"><img src="../prototips/Programmas_aizsardziba1.png" onclick="openModal(this)"><div class="image-caption">Aizsardzība (2)</div></div>
-                <div class="image-item"><img src="../prototips/Programmas_aizsardziba2.png" onclick="openModal(this)"><div class="image-caption">Aizsardzība (3)</div></div>
-                <div class="image-item"><img src="../prototips/Programmas_aizsardziba3.png" onclick="openModal(this)"><div class="image-caption">Aizsardzība (4)</div></div>
+            <h2>Drošība: Autorizācija</h2>
+            <p>Piekļuve sistēmai ir stingri kontrolēta. Katram darbiniekam ir savs konts.</p>
+            
+            <!-- Step-by-Step Walkthrough -->
+            <div class="walkthrough-container">
+                <div class="walkthrough-controls">
+                    <div class="step-btn active" onclick="setWalkthroughStep(this, 0)">1. Pieslēgšanās logs</div>
+                    <div class="step-btn" onclick="setWalkthroughStep(this, 1)">2. Paroles ievade (atcerēties)</div>
+                    <div class="step-btn" onclick="setWalkthroughStep(this, 2)">3. Lietotāja identifikācija</div>
+                    <div class="step-btn" onclick="setWalkthroughStep(this, 3)">4. Paroles atjaunošana</div>
+                </div>
+                <div class="walkthrough-visual">
+                    <div class="walkthrough-step-content active-step">
+                        <img src="../prototips/Autorizacija_Klientu_registrs1.png">
+                    </div>
+                    <div class="walkthrough-step-content">
+                        <img src="../prototips/Autorizacija_Klientu_registrs2.png">
+                    </div>
+                    <div class="walkthrough-step-content">
+                        <img src="../prototips/Lietotaja_identifikacija.png">
+                    </div>
+                    <div class="walkthrough-step-content">
+                        <img src="../prototips/Autorizacija_Klientu_registrs3_aizmirsa_paroli.png">
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- SLIDE 8: Prototype - Dashboard -->
+        <!-- 9. Piekļuves atjaunošana un Admin -->
         <div class="slide">
-            <h2>Prototips: Pārskatāma navigācija</h2>
-            <p style="text-align: center;">Galvenā izvēlne ir veidota tā, lai visas svarīgākās sadaļas būtu viena klikšķa attālumā.</p>
-            <div class="image-grid" style="grid-template-columns: repeat(3, 1fr);">
-                <div class="image-item"><img src="../prototips/Galvena_izvelne_1.png" onclick="openModal(this)"><div class="image-caption">Sākums</div></div>
-                <div class="image-item"><img src="../prototips/Galvena_izvelne_2.png" onclick="openModal(this)"><div class="image-caption">Klientu saraksts</div></div>
-                <div class="image-item"><img src="../prototips/Galvena_izvelne_3.png" onclick="openModal(this)"><div class="image-caption">Plānošana</div></div>
-                <div class="image-item"><img src="../prototips/Galvena_izvelne_4.png" onclick="openModal(this)"><div class="image-caption">Statistika</div></div>
-                <div class="image-item"><img src="../prototips/Galvena_izvelne_5.png" onclick="openModal(this)"><div class="image-caption">Administrēšana</div></div>
-                <div class="image-item"><img src="../prototips/Aktualo klientu saraksts.png" onclick="openModal(this)"><div class="image-caption">Aktuālo klientu saraksts</div></div>
+            <h2>Administrēšana un Aizsardzība</h2>
+            <p>Sistēma nodrošina rīkus administratoram un aizsardzību pret vājām parolēm.</p>
+            <div class="walkthrough-container">
+                <div class="walkthrough-controls">
+                    <div class="step-btn active" onclick="setWalkthroughStep(this, 0)">1. Administratora iestatīšana</div>
+                    <div class="step-btn" onclick="setWalkthroughStep(this, 1)">2. Paroles stipruma kontrole</div>
+                    <div class="step-btn" onclick="setWalkthroughStep(this, 2)">3. Licences pārvaldība</div>
+                </div>
+                <div class="walkthrough-visual">
+                    <div class="walkthrough-step-content active-step">
+                        <img src="../prototips/Administratora_paroles_iestatisana.png">
+                    </div>
+                    <div class="walkthrough-step-content">
+                        <img src="../prototips/Programmas_aizsardziba3.png">
+                    </div>
+                    <div class="walkthrough-step-content">
+                        <img src="../prototips/Licences_ipasnieks.png">
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- SLIDE 9: Prototype - Client Card -->
+        <!-- 10. Sistēmas "Sirds" -->
         <div class="slide">
-            <h2>Prototips: Klienta karte – sistēmas sirds</h2>
-            <p style="text-align: center;">Visa informācija par klientu ir apkopota vienā vietā – pārskatāmi un strukturēti.</p>
-            <div class="image-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
-                <div class="image-item"><img src="../prototips/Klienta Karte_Karte_Personas dati.png" onclick="openModal(this)"><div class="image-caption">Personas dati</div></div>
-                <div class="image-item"><img src="../prototips/Klienta Karte_Karte_Gimene un kontakti.png" onclick="openModal(this)"><div class="image-caption">Ģimene un kontakti</div></div>
-                <div class="image-item"><img src="../prototips/Klienta Karte_Karte_Veseliba un parvietosanas.png" onclick="openModal(this)"><div class="image-caption">Veselība un pārvietošanās</div></div>
-                <div class="image-item"><img src="../prototips/Klienta Karte_Karte_Sociala un izglitiba.png" onclick="openModal(this)"><div class="image-caption">Sociālā sfēra un izglītība</div></div>
-                <div class="image-item"><img src="../prototips/Klienta Karte_Karte_Dokumenti.png" onclick="openModal(this)"><div class="image-caption">Dokumenti</div></div>
-                <div class="image-item"><img src="../prototips/Klienta Karte_Karte_Administrativa info.png" onclick="openModal(this)"><div class="image-caption">Administratīvā informācija</div></div>
-                <div class="image-item"><img src="../prototips/Klienta Karte_Karte_Intereses un cits.png" onclick="openModal(this)"><div class="image-caption">Intereses un cita info</div></div>
-            </div>
-        </div>
-        
-        <!-- SLIDE 10: Prototype - Activities -->
-        <div class="slide">
-            <h2>Prototips: Aktivitātes un plānošana</h2>
-            <p style="text-align: center;">Vienkārša nodarbību reģistrācija un individuālo aprūpes plānu veidošana.</p>
-            <div class="image-grid" style="grid-template-columns: repeat(2, 1fr);">
-                <div class="image-item"><img src="../prototips/Nodarbību registracijas zurnals.png" onclick="openModal(this)"><div class="image-caption">Nodarbību žurnāls</div></div>
-                <div class="image-item"><img src="../prototips/Aktivitasu parvaldiba.png" onclick="openModal(this)"><div class="image-caption">Aktivitāšu pārvaldība</div></div>
-                <div class="image-item"><img src="../prototips/nod_zurn.png" onclick="openModal(this)"><div class="image-caption">Detalizēts žurnāla skats</div></div>
-                <div class="image-item"><img src="../prototips/Sociālās aprūpes plāna veidlapa.png" onclick="openModal(this)"><div class="image-caption">Sociālās aprūpes plāns</div></div>
+            <h2>Navigācija un Izvēlne</h2>
+            <p>Intuitīva sānjosla ļauj ātri piekļūt jebkurai sistēmas sadaļai. Visi moduļi ir ērti sagrupēti.</p>
+            
+            <!-- 5 images in a row with hotspots -->
+            <div style="display: flex; gap: 15px; width: 100%; justify-content: space-between; align-items: flex-start; margin-top: 20px;">
+                
+                <!-- Image 1: Klientu dati (3 punkti) -->
+                <div class="spotlight-wrapper" style="flex: 1; margin: 0;">
+                    <img src="../prototips/Galvena_izvelne_1.png" class="spotlight-img" style="width: 100%;">
+                    <div class="hotspot" style="top: 23%; left: 3%;" onclick="showSpotlightInfo(this, 'Klienta karte')"></div>
+                    <div class="hotspot" style="top: 59%; left: 3%;" onclick="showSpotlightInfo(this, 'Klientu reģistrs')"></div>
+                    <div class="hotspot" style="top: 79%; left: 3%;" onclick="showSpotlightInfo(this, 'Aktuālo saraksts')"></div>
+                    <div class="spotlight-info">Info</div>
+                </div>
+
+                <!-- Image 2: Sociālais darbs (3 punkti) -->
+                <div class="spotlight-wrapper" style="flex: 1; margin: 0;">
+                    <img src="../prototips/Galvena_izvelne_2.png" class="spotlight-img" style="width: 100%;">
+                    <div class="hotspot" style="top: 50%; left: 3%;" onclick="showSpotlightInfo(this, 'Aprūpes plāns')"></div>
+                    <div class="hotspot" style="top: 66%; left: 3%;" onclick="showSpotlightInfo(this, 'Rehabilitācijas plāns')"></div>
+                    <div class="hotspot" style="top: 84%; left: 3%;" onclick="showSpotlightInfo(this, 'Nodarbību žurnāls')"></div>
+                    <div class="spotlight-info">Info</div>
+                </div>
+
+                <!-- Image 3: Medicīna (3 punkti) -->
+                <div class="spotlight-wrapper" style="flex: 1; margin: 0;">
+                    <img src="../prototips/Galvena_izvelne_3.png" class="spotlight-img" style="width: 100%;">
+                    <div class="hotspot" style="top: 50%; left: 3%;" onclick="showSpotlightInfo(this, 'Veselības karte')"></div>
+                    <div class="hotspot" style="top: 66%; left: 3%;" onclick="showSpotlightInfo(this, 'Veidlapa slimnīcai')"></div>
+                    <div class="hotspot" style="top: 84%; left: 3%;" onclick="showSpotlightInfo(this, 'Medikamentu pasūtījums')"></div>
+                    <div class="spotlight-info">Info</div>
+                </div>
+
+                <!-- Image 4: Atskaites (5 punkti) -->
+                <div class="spotlight-wrapper" style="flex: 1; margin: 0;">
+                    <img src="../prototips/Galvena_izvelne_4.png" class="spotlight-img" style="width: 100%;">
+                    <div class="hotspot" style="top: 40%; left: 3%;" onclick="showSpotlightInfo(this, 'Klientu kopsavilkums')"></div>
+                    <div class="hotspot" style="top: 50%; left: 3%;" onclick="showSpotlightInfo(this, 'Vecuma grupu sadalījums')"></div>
+                    <div class="hotspot" style="top: 62%; left: 3%;" onclick="showSpotlightInfo(this, 'Demogrāfijas datu analīze')"></div>
+                    <div class="hotspot" style="top: 74%; left: 3%;" onclick="showSpotlightInfo(this, 'Nodarbību analīze')"></div>
+                    <div class="hotspot" style="top: 85%; left: 3%;" onclick="showSpotlightInfo(this, 'Medicīnas datu analīze')"></div>
+                    <div class="spotlight-info">Info</div>
+                </div>
+
+                <!-- Image 5: Administrācija (3 punkti) -->
+                <div class="spotlight-wrapper" style="flex: 1; margin: 0;">
+                    <img src="../prototips/Galvena_izvelne_5.png" class="spotlight-img" style="width: 100%;">
+                    <div class="hotspot" style="top: 50%; left: 3%;" onclick="showSpotlightInfo(this, 'Administratora rīki')"></div>
+                    <div class="hotspot" style="top: 66%; left: 3%;" onclick="showSpotlightInfo(this, 'Darbību vēsture')"></div>
+                    <div class="hotspot" style="top: 82%; left: 3%;" onclick="showSpotlightInfo(this, 'Sarakstu pārvaldība')"></div>
+                    <div class="spotlight-info">Info</div>
+                </div>
+
             </div>
         </div>
 
-        <!-- SLIDE 11: Prototype - Medical -->
+        <!-- 11. Klientu datubāze -->
         <div class="slide">
-            <h2>Prototips: Medicīnas modulis</h2>
-            <p style="text-align: center;">Automatizēti medikamentu pasūtījumi un veidlapas samazina kļūdu risku un ietaupa laiku.</p>
-            <div class="image-grid" style="grid-template-columns: repeat(3, 1fr);">
-                <div class="image-item"><img src="../prototips/MedikamentuPasutijums.png" onclick="openModal(this)"><div class="image-caption">Medikamentu pasūtījumi</div></div>
-                <div class="image-item"><img src="../prototips/VeselibasKarte.png" onclick="openModal(this)"><div class="image-caption">Veselības karte</div></div>
-                <div class="image-item"><img src="../prototips/Veidlapa slimnicai.png" onclick="openModal(this)"><div class="image-caption">Veidlapa nosūtīšanai uz slimnīcu</div></div>
+            <h2>Klientu Reģistrs</h2>
+            <p>Ātra meklēšana, filtrēšana un pārskatāms saraksts aizstāj Excel tabulas. Viss nepieciešamais vienā skatā.</p>
+            
+            <div class="spotlight-wrapper" style="max-width: 950px; margin: 0 auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                <img src="../prototips/KlientuRegistrs.png" class="spotlight-img" style="width: 100%; border-radius: 8px;">
+                
+                <!-- Hotspots -->
+                <div class="hotspot" style="top: 12%; left: 15%;" onclick="showSpotlightInfo(this, 'Meklē pēc statusa (bijušais, esošais)')"></div>
+                <div class="hotspot" style="top: 85%; left: 75%;" onclick="showSpotlightInfo(this, 'Pievienot jaunu klientu')"></div>
+                <div class="hotspot" style="top: 50%; left: 50%;" onclick="showSpotlightInfo(this, 'Šeit ir klientu saraksts')"></div>
+                <div class="hotspot" style="top: 85%; left: 95%;" onclick="showSpotlightInfo(this, 'Dzēst klientu')"></div>
+                <div class="hotspot" style="top: 85%; left: 65%;" onclick="showSpotlightInfo(this, 'Precizēt informāciju, ja ielasot datus kaut kas trūkst, piemēram aprūpes līmenis')"></div>
+                <div class="hotspot" style="top: 85%; left: 85%;" onclick="showSpotlightInfo(this, 'Labot klienta datus')"></div>
+                
+                <div class="spotlight-info">Izpēti reģistra iespējas!</div>
+            </div>
+
+            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 40px;">
+                <div class="tech-badge" style="background: linear-gradient(45deg, #11998e, #38ef7d); font-size: 1em; padding: 10px 20px;">⚡ Zibenīga ielāde</div>
+                <div class="tech-badge" style="background: linear-gradient(45deg, #8e44ad, #c39bd3); font-size: 1em; padding: 10px 20px;">📄 Excel Eksports</div>
             </div>
         </div>
 
-        <!-- SLIDE 12: Prototype - Analytics -->
+        <!-- 12. Klienta karte (1. daļa) -->
         <div class="slide">
-            <h2>Prototips: No datiem uz lēmumiem</h2>
-            <p style="text-align: center;">Vizuālas un interaktīvas atskaites palīdz vadībai saprast kopainu un plānot resursus.</p>
-            <div class="image-grid" style="grid-template-columns: repeat(3, 1fr);">
-                <div class="image-item"><img src="../prototips/Demografija_statistika.png" onclick="openModal(this)"><div class="image-caption">Demogrāfijas pārskats</div></div>
-                <div class="image-item"><img src="../prototips/Nodarbibu_analize_statistika_kopsavilkums.png" onclick="openModal(this)"><div class="image-caption">Nodarbību kopsavilkums</div></div>
-                <div class="image-item"><img src="../prototips/Nodarbibu_analize_statistika_klientuAktivitate.png" onclick="openModal(this)"><div class="image-caption">Klientu aktivitātes analīze</div></div>
+            <h2>Klienta karte: Pilnais Pārskats</h2>
+            <p>Interaktīvs ieskats visās klienta kartes sadaļās. Izvēlieties cilni kreisajā pusē, lai apskatītu.</p>
+            
+            <div class="app-simulator">
+                <div class="app-sidebar">
+                    <div class="app-sidebar-header">Sadaļas</div>
+                    <div class="app-tab-btn active" onclick="switchAppTab(this, 0)">👤 Personas dati</div>
+                    <div class="app-tab-btn" onclick="switchAppTab(this, 1)">👨‍👩‍👧‍👦 Ģimene un kontakti</div>
+                    <div class="app-tab-btn" onclick="switchAppTab(this, 2)">🏥 Veselība un mobilitāte</div>
+                    <div class="app-tab-btn" onclick="switchAppTab(this, 3)">🎓 Sociālā sfēra</div>
+                    <div class="app-tab-btn" onclick="switchAppTab(this, 4)">🎨 Intereses un cits</div>
+                    <div class="app-tab-btn" onclick="switchAppTab(this, 5)">📂 Dokumenti</div>
+                    <div class="app-tab-btn" onclick="switchAppTab(this, 6)">ℹ️ Administratīvā info</div>
+                </div>
+                <div class="app-content">
+                    <img src="../prototips/Klienta Karte_Karte_Personas dati.png" class="app-screen-img active" onclick="openModal(this)">
+                    <img src="../prototips/Klienta Karte_Karte_Gimene un kontakti.png" class="app-screen-img" onclick="openModal(this)">
+                    <img src="../prototips/Klienta Karte_Karte_Veseliba un parvietosanas.png" class="app-screen-img" onclick="openModal(this)">
+                    <img src="../prototips/Klienta Karte_Karte_Sociala un izglitiba.png" class="app-screen-img" onclick="openModal(this)">
+                    <img src="../prototips/Klienta Karte_Karte_Intereses un cits.png" class="app-screen-img" onclick="openModal(this)">
+                    <img src="../prototips/Klienta Karte_Karte_Dokumenti.png" class="app-screen-img" onclick="openModal(this)">
+                    <img src="../prototips/Klienta Karte_Karte_Administrativa info.png" class="app-screen-img" onclick="openModal(this)">
+                </div>
             </div>
         </div>
 
-        <!-- SLIDE 13: Project Management (Dāvis's part) -->
+        <!-- 13. Nodarbības/ aktivitātes -->
         <div class="slide">
-            <h2>Kā mēs to paveicām? (Dāvja pārraudzībā)</h2>
-            <p style="text-align: center;">Mēs strādājām pēc "Agile" principiem, kas nozīmē elastību un regulāru sadarbību.</p>
-            <ol>
-                <li><strong>Ideja un Izpēte (Zane):</strong> Sākām ar problēmas definēšanu un tirgus izpēti, lai saprastu, ko lietotājiem patiešām vajag.</li>
-                <li><strong>Tehnoloģijas un Loģika (Aleksandrs):</strong> Izvēlējāmies tehnoloģijas un izstrādājām sistēmas "skeletu".</li>
-                <li><strong>Prototipēšana (Sabīne):</strong> Pārvērtām idejas taustāmā prototipā, ko varējām testēt un uzlabot.</li>
-                <li><strong>Apkopošana un Prezentācija (Visi kopā):</strong> Salikām visu kopā, sagatavojām dokumentāciju un šo prezentāciju, lai dalītos ar paveikto.</li>
-            </ol>
-            <p>Regulāras sapulces un atklāta komunikācija bija mūsu panākumu atslēga.</p>
+            <h2>Aktivitātes un Plānošana</h2>
+            <p>Pilns cikls: no aktivitātes definēšanas līdz reģistrācijai žurnālā.</p>
+            
+            <div class="activity-browser">
+                <div class="ab-view-area">
+                    <img src="../prototips/Nodarbību registracijas zurnals.png" class="ab-image active" onclick="openModal(this)">
+                    <img src="../prototips/nod_zurn.png" class="ab-image" onclick="openModal(this)">
+                    <img src="../prototips/Pievienot_aktivitati.png" class="ab-image" onclick="openModal(this)">
+                </div>
+                <div class="ab-nav">
+                    <div class="ab-nav-item active" onclick="switchActivity(this, 0)">
+                        <div class="ab-icon-box">📊</div>
+                        <div class="ab-text-box">
+                            <span class="ab-title">Žurnāls</span>
+                            <span class="ab-desc">Kopējais pārskats</span>
+                        </div>
+                    </div>
+                    <div class="ab-nav-item" onclick="switchActivity(this, 1)">
+                        <div class="ab-icon-box">✍️</div>
+                        <div class="ab-text-box">
+                            <span class="ab-title">Ātrā ievade</span>
+                            <span class="ab-desc">Reģistrēt nodarbību</span>
+                        </div>
+                    </div>
+                    <div class="ab-nav-item" onclick="switchActivity(this, 2)">
+                        <div class="ab-icon-box">⚙️</div>
+                        <div class="ab-text-box">
+                            <span class="ab-title">Jauna aktivitāte</span>
+                            <span class="ab-desc">Pievienot sarakstam</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- SLIDE 14: Conclusion -->
+        <!-- 14. Medicīnas modulis -->
+        <div class="slide">
+            <h2>Medicīnas modulis</h2>
+            <p>Vienota sistēma veselības datu uzraudzībai un medikamentu apritei.</p>
+            
+            <div class="activity-browser">
+                <div class="ab-view-area">
+                    <img src="../prototips/VeselibasKarte.png" class="ab-image active" onclick="openModal(this)">
+                    <img src="../prototips/Veidlapa slimnicai.png" class="ab-image" onclick="openModal(this)">
+                    <img src="../prototips/MedikamentuPasutijums.png" class="ab-image" onclick="openModal(this)">
+                </div>
+                <div class="ab-nav">
+                    <div class="ab-nav-item active" onclick="switchActivity(this, 0)">
+                        <div class="ab-icon-box">🩺</div>
+                        <div class="ab-text-box">
+                            <span class="ab-title">Veselības karte</span>
+                            <span class="ab-desc">Diagnozes un terapija</span>
+                        </div>
+                    </div>
+                    <div class="ab-nav-item" onclick="switchActivity(this, 1)">
+                        <div class="ab-icon-box">🚑</div>
+                        <div class="ab-text-box">
+                            <span class="ab-title">Veidlapa slimnīcai</span>
+                            <span class="ab-desc">Automātiska ģenerēšana</span>
+                        </div>
+                    </div>
+                    <div class="ab-nav-item" onclick="switchActivity(this, 2)">
+                        <div class="ab-icon-box">💊</div>
+                        <div class="ab-text-box">
+                            <span class="ab-title">Medikamentu pasūtījumi</span>
+                            <span class="ab-desc">Centralizēta iepirkšana</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 15. Statistika un analītika -->
+        <div class="slide">
+            <h2>Statistika un Analītika</h2>
+            <p>Vizuāli dati palīdz vadībai pieņemt lēmumus. Izvēlieties analītikas paneli:</p>
+            
+            <div class="app-simulator" style="height: 600px;">
+                <div class="app-sidebar">
+                    <div class="app-sidebar-header">📊 Analītika</div>
+                    <div class="app-tab-btn active" onclick="switchAppTab(this, 0)">👥 Demogrāfija</div>
+                    <div class="app-tab-btn" onclick="switchAppTab(this, 1)">📈 Aktivitāšu dinamika</div>
+                    <div class="app-tab-btn" onclick="switchAppTab(this, 2)">📋 Nodarbību kopsavilkums</div>
+                    <div class="app-tab-btn" onclick="switchAppTab(this, 3)">👨‍⚕️ Speciālistu noslodze</div>
+                    <div class="app-tab-btn" onclick="switchAppTab(this, 4)">🎂 Vecuma struktūra</div>
+                    <div class="app-tab-btn" onclick="switchAppTab(this, 5)">💊 Medicīnas pārskats</div>
+                </div>
+                <div class="app-content">
+                    <img src="../prototips/Demografija_statistika.png" class="app-screen-img active" onclick="openModal(this)">
+                    <img src="../prototips/Statist_nodarbibas_klientuaktivitate.png" class="app-screen-img" onclick="openModal(this)">
+                    <img src="../prototips/Statist_nodarbibas_kopa.png" class="app-screen-img" onclick="openModal(this)">
+                    <img src="../prototips/Statist_nodarbibas_paspecialistiem.png" class="app-screen-img" onclick="openModal(this)">
+                    <img src="../prototips/Statist_vecumasadalijums.png" class="app-screen-img" onclick="openModal(this)">
+                    <img src="../prototips/Statist_medicina_kopa.png" class="app-screen-img" onclick="openModal(this)">
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;">
+                <div class="tech-badge" style="background: linear-gradient(45deg, #ff9966, #ff5e62); font-size: 0.9em; padding: 8px 15px;">📊 JavaFX Charts</div>
+                <div class="tech-badge" style="background: linear-gradient(45deg, #56ab2f, #a8e063); font-size: 0.9em; padding: 8px 15px;">⚡ Live Data</div>
+                <div class="tech-badge" style="background: linear-gradient(45deg, #4568dc, #b06ab3); font-size: 0.9em; padding: 8px 15px;">📄 PDF Eksports</div>
+            </div>
+        </div>
+
+        <!-- 16. Administratora rīki -->
+        <div class="slide">
+            <h2>Administratora Rīki</h2>
+            <p>Centrālais vadības panelis sistēmas drošībai un uzturēšanai. Viss svarīgais vienuviet.</p>
+            
+            <div class="admin-container">
+                <div class="admin-image-wrapper">
+                    <img src="../prototips/Admin_riki.png" class="admin-img" onclick="openModal(this)">
+                </div>
+                
+                <div class="admin-features">
+                    <div class="admin-card security">
+                        <span class="ac-icon">🛡️</span>
+                        <div class="ac-title">Drošības Centrs</div>
+                        <div class="ac-desc">Pārvaldiet lietotāju piekļuves, mainiet paroles un piešķiriet pagaidu tiesības krīzes situācijās.</div>
+                    </div>
+                    
+                    <div class="admin-card data">
+                        <span class="ac-icon">💾</span>
+                        <div class="ac-title">Datu Aizsardzība</div>
+                        <div class="ac-desc">Veiciet datubāzes rezerves kopēšanu (Backup) un atjaunošanu (Restore) ar vienu klikšķi.</div>
+                    </div>
+                    
+                    <div class="admin-card system">
+                        <span class="ac-icon">🧹</span>
+                        <div class="ac-title">Sistēmas Higiēna</div>
+                        <div class="ac-desc">Automatizēta veco datu arhivēšana un dzēšana, lai uzturētu sistēmu ātru un tīru.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 17. Algoritms un Nākotne -->
+        <div class="slide">
+            <h2>Darbības Algoritms un Nākotne</h2>
+            <div style="display: flex; gap: 40px; justify-content: center; align-items: flex-start;">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div class="algo-step">1. Autorizācija & Tiesību pārbaude</div>
+                    <div class="algo-step">2. Klienta identifikācija / Reģistrācija</div>
+                    <div class="algo-step">3. Datu apstrāde (Karte / Plāni / Medicīna)</div>
+                    <div class="algo-step">4. Datu saglabāšana (MySQL + H2 Backup)</div>
+                    <div class="algo-step">5. Analītika & Atskaites</div>
+                </div>
+                <div style="max-width: 400px;">
+                    <h3>Nākotnes attīstība:</h3>
+                    <ul>
+                        <li>📱 Mobilā lietotne darbiniekiem.</li>
+                        <li>☁️ Mākoņpakalpojumu integrācija.</li>
+                        <li>🤖 AI asistents atskaišu analīzei.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 21. Noslēgums -->
         <div class="slide title-slide">
-            <h1>Paldies par uzmanību!</h1>
-            <h3>Jautājumi?</h3>
-            <p style="text-align: center; max-width: 800px;">Mūsu komanda ir radījusi ne tikai programmatūru, bet gan rīku, kas var reāli uzlabot sociālās aprūpes darbinieku un viņu klientu dzīves kvalitāti. Mēs ticam, ka tehnoloģijām ir jākalpo cilvēkam.</p>
+            <div class="hero-container" style="flex-direction: column; justify-content: center; text-align: center; gap: 30px;">
+                <div style="animation: zoomIn 0.8s ease-out;">
+                    <h1 style="font-size: 4.5em; margin: 0; background: linear-gradient(45deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Paldies par uzmanību!</h1>
+                    <h2 style="color: var(--secondary); border: none; font-size: 2.5em; margin-top: 10px;">Jautājumi?</h2>
+                </div>
+
+                <div style="max-width: 900px; padding: 40px; background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); position: relative; animation: fadeIn 1.5s ease-out;">
+                    <span style="position: absolute; top: -20px; left: 20px; font-size: 4em; color: var(--accent); opacity: 0.3;">“</span>
+                    <p style="font-size: 1.8em; line-height: 1.4; color: #444; text-align: center; margin: 0; font-weight: 300;">
+                        Mēs ticam, ka tehnoloģijām ir jākalpo cilvēkam, atbrīvojot laiku tam, kas patiešām ir svarīgs – <strong style="color: var(--accent);">rūpēm par citiem.</strong>
+                    </p>
+                </div>
+
+                <div style="margin-top: 30px; display: flex; gap: 15px; animation: fadeIn 2s ease-out;">
+                    <div class="tech-badge" style="background: #2c3e50;">Dāvis</div>
+                    <div class="tech-badge" style="background: #2980b9;">Zane</div>
+                    <div class="tech-badge" style="background: #34495e;">Aleksandrs</div>
+                    <div class="tech-badge" style="background: #7f8c8d;">Sabīne</div>
+                </div>
+            </div>
         </div>
 
     </div>
 
     <!-- Footer Info -->
     <div class="footer-info">
-        Komanda: Dāvis, Zane, Aleksandrs, Sabīne | Klientu Reģistrs | <span id="slide-counter">1 / 14</span>
+        Komanda: Dāvis Strazds, Zane Ābele, Aleksandrs Pavlovskis, Sabīne Pavlovska | Klientu Reģistrs | <span id="slide-counter">1 / 21</span>
     </div>
 
     <!-- Controls -->
     <div class="controls">
+        <button onclick="toggleFullscreen()" title="Pilnekrāna režīms">⛶</button>
         <button id="prevBtn" onclick="changeSlide(-1)">&#10094; Atpakaļ</button>
-        <button id="nextBtn" onclick="changeSlide(1)">Tālāk &#10095;</button>
+        <button id="nextBtn" onclick="changeSlide(1)" class="next-btn-pulse">Tālāk &#10095;</button>
     </div>
 
     <!-- Image Modal -->
     <div id="myModal" class="modal">
         <span class="close" onclick="closeModal()">&times;</span>
         <img class="modal-content" id="img01">
+        <div class="modal-nav prev-img" onclick="changeModalImage(-1)">&#10094;</div>
+        <div class="modal-nav next-img" onclick="changeModalImage(1)">&#10095;</div>
     </div>
 
     <script>
@@ -494,6 +1326,10 @@
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
         const totalSlides = slides.length;
+
+        // Modal Logic Variables
+        let currentModalImages = [];
+        let currentModalIndex = 0;
 
         function showSlide(index) {
             slides.forEach((slide, i) => {
@@ -510,6 +1346,11 @@
 
             prevBtn.disabled = index === 0;
             nextBtn.disabled = index === totalSlides - 1;
+            
+            // Remove pulse from next button unless it's the start
+            if (index > 0) {
+                nextBtn.classList.remove('next-btn-pulse');
+            }
         }
 
         function changeSlide(direction) {
@@ -520,24 +1361,51 @@
             }
         }
 
+        // Keyboard Navigation
         document.addEventListener('keydown', (e) => {
-            if (document.getElementById("myModal").style.display === "block") return;
-            if (e.key === 'ArrowRight' || e.key === ' ') {
+            if (document.getElementById("myModal").style.display === "block") {
+                if (e.key === 'ArrowRight') changeModalImage(1);
+                if (e.key === 'ArrowLeft') changeModalImage(-1);
+                if (e.key === 'Escape') closeModal();
+                return;
+            }
+            
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
                 e.preventDefault();
                 changeSlide(1);
             } else if (e.key === 'ArrowLeft') {
                 e.preventDefault();
                 changeSlide(-1);
-            } else if (e.key === 'Escape') {
-                closeModal();
             }
         });
 
+        // Modal Logic
         function openModal(element) {
             const modal = document.getElementById("myModal");
             const modalImg = document.getElementById("img01");
+            
+            // Find all images in the current slide to create a gallery
+            const activeSlide = document.querySelector('.slide.active');
+            currentModalImages = Array.from(activeSlide.querySelectorAll('img'));
+            currentModalIndex = currentModalImages.indexOf(element);
+
             modal.style.display = "block";
             modalImg.src = element.src;
+            
+            // Show/Hide nav buttons based on count
+            document.querySelector('.prev-img').style.display = currentModalImages.length > 1 ? 'block' : 'none';
+            document.querySelector('.next-img').style.display = currentModalImages.length > 1 ? 'block' : 'none';
+        }
+
+        function changeModalImage(direction) {
+            if (currentModalImages.length <= 1) return;
+            
+            currentModalIndex += direction;
+            if (currentModalIndex < 0) currentModalIndex = currentModalImages.length - 1;
+            if (currentModalIndex >= currentModalImages.length) currentModalIndex = 0;
+            
+            const modalImg = document.getElementById("img01");
+            modalImg.src = currentModalImages[currentModalIndex].src;
         }
 
         function closeModal() {
@@ -548,6 +1416,99 @@
             const modal = document.getElementById("myModal");
             if (event.target == modal) {
                 modal.style.display = "none";
+            }
+        }
+
+        // --- Interactive Demo Functions ---
+
+        // 1. Comparison Slider
+        function moveSlider(e) {
+            const container = document.querySelector('.comparison-container');
+            const overlay = document.getElementById('compOverlay');
+            const rect = container.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const width = Math.max(0, Math.min(x, rect.width));
+            overlay.style.width = width + 'px';
+        }
+
+        // 2. Spotlight
+        function showSpotlightInfo(hotspotElement, text) {
+            const wrapper = hotspotElement.closest('.spotlight-wrapper');
+            if (!wrapper) return;
+            const infoBox = wrapper.querySelector('.spotlight-info');
+            if (!infoBox) return;
+
+            // Hide any other visible info boxes in the same slide to avoid overlap
+            const currentSlide = hotspotElement.closest('.slide');
+            if (currentSlide) {
+                currentSlide.querySelectorAll('.spotlight-info.visible').forEach(box => {
+                    if (box !== infoBox) {
+                        box.classList.remove('visible');
+                    }
+                });
+            }
+
+            infoBox.textContent = text;
+            infoBox.classList.add('visible');
+            
+            setTimeout(() => {
+                infoBox.classList.remove('visible');
+            }, 4000);
+        }
+
+        // 3. Walkthrough
+        function setWalkthroughStep(btn, stepIndex) {
+            const container = btn.closest('.walkthrough-container');
+            if (!container) return;
+
+            // Update buttons: remove active from all, add to clicked
+            container.querySelectorAll('.step-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Update content: hide all, show specific index
+            const steps = container.querySelectorAll('.walkthrough-visual > .walkthrough-step-content');
+            steps.forEach(step => step.classList.remove('active-step'));
+            if (steps[stepIndex]) {
+                steps[stepIndex].classList.add('active-step');
+            }
+        }
+
+        // 4. App Simulator Tabs
+        function switchAppTab(btn, index) {
+            const container = btn.closest('.app-simulator');
+            
+            // Update buttons
+            container.querySelectorAll('.app-tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Update images
+            const images = container.querySelectorAll('.app-screen-img');
+            images.forEach(img => img.classList.remove('active'));
+            if(images[index]) images[index].classList.add('active');
+        }
+
+        // 5. Activity Browser Logic
+        function switchActivity(btn, index) {
+            const container = btn.closest('.activity-browser');
+            
+            // Update nav buttons
+            container.querySelectorAll('.ab-nav-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            // Update images
+            const images = container.querySelectorAll('.ab-image');
+            images.forEach(img => img.classList.remove('active'));
+            if(images[index]) images[index].classList.add('active');
+        }
+
+        // 6. Fullscreen
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable full-screen mode: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
             }
         }
 

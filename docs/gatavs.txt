@@ -1,0 +1,210 @@
+PROJEKTA DOKUMENTĀCIJA
+Modulis: EIKT produktu izstrāde
+Projekts: Sociālās aprūpes iestāžu pārvaldības sistēma
+
+================================================================================
+1. PROJEKTA DARBA MĒRĶIS
+================================================================================
+Projekta mērķis ir izstrādāt jauna EIKT nozares produkta ideju – Sociālās aprūpes iestāžu pārvaldības sistēmu, pamatot tās aktualitāti tirgū, izveidot produkta prototipu un sagatavot tehnisko dokumentāciju. Sistēma paredzēta sociālās aprūpes centru (SAC) darba optimizācijai, digitalizējot klientu lietu pārvaldību, automatizējot dokumentu apriti un nodrošinot drošu, strukturētu pieeju aprūpes procesiem.
+
+================================================================================
+2. DARBA FORMA UN ORGANIZĀCIJA (KOMANDA)
+================================================================================
+Projekta izstrādi veica komanda ar sadalītām atbildības jomām:
+
+* Zane Ābele (Biznesa analītiķe):
+  - Idejas izstrāde un tirgus izpēte.
+  - Problēmu definēšana un mērķauditorijas analīze.
+  - Komunikācijas plāna izstrāde.
+
+* Aleksandrs Pavlovskis (Sistēmu analītiķis):
+  - Tehniskā specifikācija un arhitektūra.
+  - Tehnoloģiju izvēles pamatojums (Java, SQL).
+  - Sistēmas algoritmu un drošības risinājumu apraksts.
+
+* Sabīne (UI/UX & QA):
+  - Produkta prototipa izstrāde un lietotāja ceļa (User Journey) definēšana.
+  - Vizuālā identitāte un lietojamības testēšana.
+  - Kvalitātes kontroles (QA) apraksts.
+
+* Dāvis Strazds (Projekta vadītājs):
+  - Projekta koordinēšana un tehniskā realizācija.
+
+================================================================================
+3. PROJEKTA DARBA SATURS UN POSMI
+================================================================================
+
+3.1. IDEJAS IZSTRĀDE UN TIRGUS IZPĒTE
+--------------------------------------------------------------------------------
+(Balstīts uz Biznesa plāna analīzi)
+A. Kādas problēmas produkts risina:
+   - Sadrumstalota informācija: Nav vienota klientu reģistra, dati ir izkaisīti. Sistēma nodrošina centralizētu datubāzi, kur visa informācija par klientu ir vienkopus.
+   - Laikietilpīga dokumentu meklēšana: Vēsturiskās veidlapas un informācija jāmeklē manuāli papīra arhīvos ("seifos"). Sistēma piedāvā tūlītēju piekļuvi vēsturiskajiem datiem ar meklēšanas un filtrēšanas iespējām "neatejot no darba vietas".
+   - Manuāla datu ievade un dubults darbs: Darbinieki tērē daudz laika, aizpildot papīra veidlapas un pārrakstot informāciju, kas atkārtojas (piem., medikamentu pasūtījumos, sociālajos plānos). Sistēma automatizē datu ielasīšanu veidlapās un izmanto klasifikatorus, samazinot manuālo darbu.
+   - Neefektīvi aprēķini: Aprēķini Excel veidlapās ir manuāli un lēni. Sistēmā ir iestrādātas formulas, kas automatizē aprēķinus, padarot procesu ātrāku un precīzāku.
+   - Procesa necaurspīdīgums: Grūti kontrolēt un uzraudzīt dokumentu apriti un veiktās darbības. Sistēma nodrošina pilnu darbību auditu ("Audit logs") un piekļuves kontroli atbilstoši lietotāja lomai.
+   - Zema datu drošība: Papīra dokumenti var pazust, tikt bojāti vai nonākt nepiederošu personu rokās. Sistēmā dati tiek aizsargāti ar paroli, piekļuve ir ierobežota, un tiek veidotas regulāras datu rezerves kopijas ("Administratora rīki").
+   - Laikietilpīgas atskaites: Manuāla atskaišu gatavošana ir lēna. Sistēmā ir iebūvēts atskaišu modulis, kas ļauj ģenerēt interaktīvas vizualizācijas par klientu demogrāfiju, dinamiku un citiem KPI.
+   - Mazāk laika klientam: Lielais administratīvais slogs samazina laiku, ko darbinieki var veltīt tiešai komunikācijai ar klientiem. Sistēma atbrīvo darbinieku laiku, automatizējot rutīnas uzdevumus.
+
+B. Kāpēc problēma ir aktuāla:
+   - Risinājums nodrošina, ka visa informācija par klientu ir vienkopus, viegli atrodama, uzraugāma un izsekojama. Process tiek paātrināts, un darbinieki ietaupītajā laikā var vairāk veltīt komunikācijai ar klientu, uzlabojot aprūpes kvalitāti.
+
+C. Mērķauditorija:
+   - Sociālās aprūpes iestādes.
+   - 1. kārta: Pašvaldības iestādes.
+   - 2. kārta: Privātie aprūpes centri.
+
+D. Produkta atšķirība no līdzīgiem risinājumiem (Tirgus izpēte):
+   - Latvijas Samariešu apvienība: Veikta intervija ar IS lietotājiem. Identificēts, ka esošais risinājums nav bijis lietotājam draudzīgs un ērts, kā rezultātā darbinieki atgriezušies pie papīra formāta.
+   - Latvijas Sarkanis Krusts: Ir savs iekšējs risinājums, taču intervijas ar lietotājiem nav veiktas.
+   - Mūsu priekšrocība: Fokusēts uz lietojamību (UX), specifiskām SAC vajadzībām (medikamenti, nodarbības) un offline režīma atbalstu.
+
+E. Komunikācijas plāns:
+   - Sākotnēji plānota komunikācija ar vadošajiem lēmuma pieņēmējiem, prezentējot ieguvumus iestādei (efektivitāte, statistika, reputācijas uzlabošana) un peļņas potenciālu, kas rodas no uzlabotas aprūpes kvalitātes.
+   - Vēlāk vadītāji risinājuma nepieciešamību "kaskadē" uz zemāka līmeņa darbiniekiem. Detalizētās apmācībās tiek uzsvērts, kā sistēma atvieglo un paātrina tieši viņu ikdienas darbu.
+
+3.2. INFORMĀCIJAS UN TEHNOLOĢIJU IZMANTOŠANA
+--------------------------------------------------------------------------------
+(Balstīts uz Tehnisko specifikāciju)
+
+Sistēma veidota kā darbvirsmas (desktop) lietojumprogramma, balstoties uz "Multi-tier" arhitektūru un MVC (Model-View-Controller) projektēšanas paraugu. Tas nodrošina koda modularitāti, vieglu testēšanu un uzturēšanu.
+
+A. EIKT nozares aktualitātes:
+   - Digitālā transformācija: Pāreja no papīra uz elektroniskiem reģistriem (ES Digitālā dekāde 2030, Latvijas e-veselības plāns).
+   - GDPR un datu aizsardzība: Sensitīvu datu (veselība, sociālais stāvoklis) šifrēšana un stingra piekļuves kontrole.
+   - Offline-first un hibrīda risinājumi: Darbības nodrošināšana reģionos ar nestabilu internetu (lokāla datu buferēšana).
+   - Datu analītika un automatizācija: Reāllaika KPI paneļi, prognozēšana un resursu plānošana.
+   - Mākoņtehnoloģiju integrācija: Potenciāls nākotnes savienojamībai ar lokālu "fallback" mehānismu.
+
+B. Izmantotās tehnoloģijas un pamatojums:
+   Visas izmantotās tehnoloģijas ir atvērtā pirmkoda, bezmaksas un plaši dokumentētas, nodrošinot ilgtspēju:
+
+   - Java 21 (LTS): Stabila, droša enterprise valoda backend loģikai.
+   - JavaFX 21: Moderns, platformu neatkarīgs darbvirsmas (desktop) interfeiss ar responsīvu dizainu.
+   - MySQL 8.0+: Uzticama centrālā datubāze liela apjoma datiem ar labu transakciju atbalstu.
+   - H2 Database: Iegultā (embedded) datubāze darbam bezsaistes (offline) režīmā.
+   - HikariCP: Augstas veiktspējas savienojumu pūls (connection pool), kas samazina latentumu.
+   - Apache POI: Excel atskaišu un veidlapu ģenerēšanai (SAC standarts).
+   - BCrypt: NIST ieteikts industriālais standarts paroļu hešēšanai (aizsardzība pret "brute-force").
+   - Logback/SLF4J: Standarta auditējamā žurnālošana (logging) visu darbību fiksēšanai.
+   - Maven: Atkarību pārvaldība un projekta būvēšana.
+
+3.3. PRODUKTA PROTOTIPA IZSTRĀDE
+--------------------------------------------------------------------------------
+(Balstīts uz Prototips_UIUX_QA un Tehnisko specifikāciju)
+
+A. Prototipa apraksts un Lietotāja ceļš:
+   Sistēma ir izstrādāta kā darbvirsmas lietotne ar intuitīvu saskarni. Tipiska sociālā darbinieka plūsma:
+   1. Autorizācija: Droša piekļuve ar lietotājvārdu un paroli.
+   2. Galvenais panelis (Dashboard): Pārskats par KPI (jauni klienti, termiņi, dzimšanas dienas, kolēģi tiešsaistē).
+   3. Klientu reģistrs: Saraksts ar meklēšanu, filtrēšanu un statusa indikāciju.
+   4. Klienta karte: Centralizēta lieta ar cilnēm:
+      - Personas dati.
+      - Ģimene un kontakti.
+      - Veselība un pārvietošanās.
+      - Dokumenti un pielikumi.
+   5. Aktivitātes: Nodarbību žurnāls, rehabilitācijas un aprūpes plāni.
+   6. Medicīna: Medikamentu pasūtījumu veidošana un veidlapas slimnīcai.
+   7. Statistika: Datu vizualizācija un analītika vadībai.
+
+B. Produkta darbības algoritms:
+   Galvenās iezīmes un lietotāja plūsma:
+   - Datu ievade tiek validēta, samazinot kļūdu risku.
+   - Eksporta veidlapas tiek ģenerētas automātiski.
+   - Sistēma atbalsta drošu darbu ar sensitīviem datiem.
+
+   Lai parādītu sistēmas darbības loģiku un galveno lietotāja plūsmu, prototipa pamatā ir šāds vienkāršots darbības algoritms:
+   1. Lietotājs atver sistēmu un veic autorizāciju.
+   2. Sistēma pārbauda lietotāja piekļuves tiesības un drošības statusu.
+   3. Pēc veiksmīgas pieslēgšanās tiek atvērts galvenais panelis ar pieejamajiem moduļiem.
+   4. Lietotājs izvēlas klientu no klientu reģistra vai izveido jaunu klienta profilu.
+   5. Sistēma atver klienta karti, kur iespējams uzturēt personas, veselības un sociālos datus.
+   6. Lietotājs reģistrē aktivitātes, nodarbības un rehabilitācijas pasākumus klienta aprūpes plānā.
+   7. Medicīniskajos moduļos iespējams noformēt medikamentu pasūtījumus un ģenerēt ārstniecības veidlapas.
+   8. Sistēma saglabā ievadītos datus centralizētā datubāzē un nodrošina informācijas izsekojamību.
+   9. Vadība var izmantot statistikas un analītikas sadaļu pārskatu sagatavošanai un resursu plānošanai.
+   10. Gadījumā, ja nav interneta savienojuma, sistēma atbalsta offline režīmu un datu sinhronizāciju pēc savienojuma atjaunošanas.
+   
+   Tehniskie algoritmi un loģika:
+   
+   1. Autentifikācijas algoritms:
+      - Lietotājs ievada datus -> Parole hešēta ar BCrypt un salīdzināta ar DB.
+      - Veiksmīga autorizācija izveido sesiju (SessionManager) ar 30 min noildzi (timeout).
+   
+   2. Offline sinhronizācijas loģika (Store-and-Forward):
+      - Periodiska savienojuma pārbaude (ping).
+      - Bez savienojuma: izmaiņas tiek saglabātas lokālajā H2 datubāzē un buferī.
+      - Savienojums atjaunots: buferētie vaicājumi tiek nosūtīti secīgi transakcijās.
+      - Konfliktu risināšana: prioritāte administratoram vai jaunākajam laika zīmogam.
+   
+   3. Klienta personas koda validācija:
+      - Formāta pārbaude (ddmmyy-xxxxx) un kontrolcipara aprēķins (LV standarts).
+      - Unikāluma pārbaude datubāzē, lai novērstu dublikātus.
+   
+   4. Termiņu un brīdinājumu loģika (Dashboard):
+      - Aprēķins: Current_date + X dienas -> Krāsu kods (Zaļš=OK, Dzeltens=Tuvojas, Sarkans=Nokavēts).
+      - Datu agregācija reāllaika paneļiem.
+
+C. Vienkāršots biznesa plāns (Iesaistītās puses):
+   Lai veiksmīgāk izietu tirgū, plānots veikt iesaistīto pušu analīzi un stratēģiski piedāvāt risinājumu pašvaldībām kā prioritārajam klientam, nodrošinot ātrāku ieviešanu.
+
+D. Produkta dokumentācija:
+   Sagatavota tehniskā specifikācija, lietotāja rokasgrāmata un testēšanas dokumentācija, kas nodrošina sistēmas uzturēšanu un tālāku attīstību.
+
+3.4. PAPILDU SISTĒMAS FUNKCIONALITĀTE (ADMINISTRĒŠANA UN DROŠĪBA)
+--------------------------------------------------------------------------------
+(Balstīts uz Pielikumu A)
+Papildus galvenajam lietotāja ceļam sistēmā ir izstrādāti arī administratīvie, drošības un konfigurācijas moduļi, kas nodrošina sistēmas stabilu darbību, piekļuves kontroli un ieviešanas iespējas sociālās aprūpes iestādēs.
+
+A. Administratora rīki un drošība:
+   - Administratora paroles pārvaldība: Iespēja atiestatīt paroles un uzturēt lietotāju piekļuves drošību.
+   - Programmas aizsardzības mehānismi: Aizsardzība pret nesankcionētu piekļuvi.
+   - Papildu drošības slāņi: Drošības funkcijas, aizsardzības režīmi un konfigurācijas pārbaude.
+   - Piekļuves uzraudzība: Sistēmas aizsardzība pret ļaunprātīgu izmantošanu, izmantojot "Prepared Statements" (pret SQL injekcijām) un GDPR principus.
+
+B. Licencēšana un piekļuves kontrole:
+   - Licencēšanas modulis: Nodrošina produkta juridisko aizsardzību un kontrolētu ieviešanu (licences īpašnieka un produkta tiesību pārvaldība).
+   - Lietotāja identifikācija un audits: Nodrošina darbību izsekojamību un audita iespējas.
+
+C. Sistēmas konfigurācija un papildu iespējas:
+   - Aktivitāšu klasifikatoru administrēšana: Iespēja uzturēt aktivitāšu sarakstus un kategorijas.
+   - Offline režīms: MySQL savienojuma iestatījumi darbam bezsaistē un automātiska datu sinhronizācija.
+   - Paplašinātie skati: Pilnais klientu reģistrs, papildu nodarbību žurnāla formas, paplašinātas klienta kartes cilnes (administratīvā info, intereses, sociālā un izglītības informācija).
+   - Padziļināta analītika: Klientu aktivitātes dinamika un rehabilitācijas programmu efektivitātes izvērtēšana.
+
+D. Nākotnes attīstības iespējas:
+   - Mākoņa sinhronizācija (AWS/Azure) ar lokālu rezerves kopiju.
+   - AI risku analīze (prognozēt veselības pasliktināšanos).
+   - Mobilā versija darbiniekiem (planšetdatoriem).
+   - Integrācija ar valsts e-veselības sistēmām.
+
+3.5. KVALITĀTES KONTROLE UN TESTĒŠANA
+--------------------------------------------------------------------------------
+(Balstīts uz Testēšanas dokumentāciju un Tehnisko specifikāciju)
+
+Lai nodrošinātu sistēmas stabilitāti un datu integritāti, tika veikta visaptveroša testēšana, izmantojot gan automatizētās, gan manuālās metodes.
+
+A. Testēšanas stratēģija un rīki:
+   - Vienībtesti (Unit Tests): Izmantoti JUnit 5 un Mockito, lai pārbaudītu atsevišķu klašu un metožu darbību (piem., personas koda validāciju, paroļu hešēšanu).
+   - Integrācijas testi: Pārbauda sistēmas komponentu sadarbību ar datubāzi (H2/MySQL) un ārējiem servisiem.
+   - UI/E2E testi: Izmantojot TestFX, simulēta lietotāja darbība (klikšķi, ievade), lai pārliecinātos par saskarnes pareizu reakciju.
+   - Drošības un stresa testi: Veikti "Chaos Monkey" testi, SQL injekciju simulācijas un veiktspējas testi ar lielu datu apjomu (50 000+ ieraksti).
+
+B. Testu pārklājums:
+   - Drošība: Pārbaudīta autentifikācija, sesiju pārvaldība un piekļuves tiesības (RBAC).
+   - Datu integritāte: Testēta transakciju apstrāde, kaskādes dzēšana un ierakstu bloķēšana (Concurrency) pie vienlaicīgas piekļuves.
+   - Noturība (Resilience): Simulētas tīkla kļūdas un DB atvienošanās, pārbaudot bezsaistes bufera un sinhronizācijas darbību.
+   - Dokumentācijas atbilstība: Ieviesti "Līguma testi", kas automātiski pārbauda koda atbilstību tehniskajai dokumentācijai.
+
+C. Manuālā testēšana:
+   - Veikta vizuālā pārbaude (UI Responsiveness), Excel atskaišu ģenerēšanas un drukāšanas funkcionalitātes kontrole.
+
+================================================================================
+4. GALA PREZENTĀCIJA UN SECINĀJUMI
+================================================================================
+Izstrādātais prototips demonstrē funkcionālu un praksē pielietojamu digitālu risinājumu sociālās aprūpes iestāžu vajadzībām. Tas parāda sistēmas galveno lietotāja plūsmu, datu pārvaldības principus un būtiskākos moduļus, kas nepieciešami ikdienas darbā ar klientu sensitīvo informāciju.
+
+Prototips palīdz novērtēt sistēmas lietojamību un darbības loģiku pirms pilnas izstrādes, samazina kļūdu risku un kalpo kā pamats turpmākai produkta attīstībai un ieviešanai reālā darba vidē.
+
+Papildu izstrādātie administrēšanas un drošības moduļi demonstrē produkta tehnisko briedumu un gatavību pilnvērtīgai ieviešanai, nodrošinot ne tikai ikdienas funkcionalitāti, bet arī sistēmas stabilitāti, datu aizsardzību un pielāgojamību darbam apstākļos ar ierobežotu interneta pieejamību.
